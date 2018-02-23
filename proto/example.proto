@@ -1,0 +1,79 @@
+syntax="proto3";
+
+// GoGo gRPC Example
+//
+// This example is used to show how to use gRPC and
+// gRPC-Gateway with GoGo Protobuf.
+package example;
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
+import "protoc-gen-swagger/options/annotations.proto";
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+import "github.com/mwitkow/go-proto-validators/validator.proto";
+
+option go_package = "github.com/gogo/grpc-example/proto;example";
+
+option (grpc.gateway.protoc_gen_swagger.options.openapiv2_swagger) = {
+  info: {
+    version: "1.0";
+  };
+  external_docs: {
+    url: "https://github.com/gogo/grpc-example";
+    description: "gRPC example repository";
+  }
+  schemes: HTTPS;
+};
+
+// Enable custom Marshal method.
+option (gogoproto.marshaler_all) = true;
+// Enable custom Unmarshal method.
+option (gogoproto.unmarshaler_all) = true;
+// Enable custom Size method (Required by Marshal and Unmarshal).
+option (gogoproto.sizer_all) = true;
+// Enable registration with golang/protobuf for the grpc-gateway.
+option (gogoproto.goproto_registration) = true;
+
+service UserService {
+    rpc AddUser(User) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            post: "/api/v1/user"
+            body: "*"
+        };
+    }
+    rpc ListUsers(google.protobuf.Empty) returns (stream User) {
+        option (google.api.http) = {
+            get: "/api/v1/users"
+        };
+    }
+    rpc ListUsersByRole(UserRole) returns (stream User) {
+        option (google.api.http) = {
+            get: "/api/v1/users/role"
+        };
+    }
+}
+
+enum Role {
+    GUEST = 0;
+    MEMBER = 1;
+    ADMIN = 2;
+}
+
+message User {
+    uint32 id = 1 [
+        (gogoproto.customname) = "ID",
+        (validator.field) = {
+            int_gt: 0
+            human_error: "ID must a positive integer"
+        }
+    ];
+    Role role = 2;
+    google.protobuf.Timestamp create_date = 3 [
+        (gogoproto.stdtime) = true
+    ];
+}
+
+message UserRole {
+    Role role = 1;
+}
