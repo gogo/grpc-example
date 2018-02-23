@@ -1,0 +1,48 @@
+required = [
+  "github.com/gogo/protobuf/protoc-gen-gogo",
+  "github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway",
+  "github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger",
+  "github.com/mwitkow/go-proto-validators/protoc-gen-govalidators",
+]
+
+[prune]
+  go-tests = true
+  unused-packages = true
+  non-go = true
+
+  [[prune.project]]
+    name = "github.com/gogo/protobuf"
+    non-go = false
+
+  [[prune.project]]
+    name = "github.com/gogo/googleapis"
+    non-go = false
+
+  [[prune.project]]
+    name = "github.com/grpc-ecosystem/grpc-gateway"
+    non-go = false
+
+  [[prune.project]]
+    name = "github.com/mwitkow/go-proto-validators"
+    non-go = false
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/gogo/googleapis"
+
+[[constraint]]
+  name = "github.com/gogo/protobuf"
+  version = "1.0.0"
+
+[[constraint]]
+  name = "github.com/grpc-ecosystem/grpc-gateway"
+  version = "1.3.1"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/mwitkow/go-proto-validators"
+
+[[constraint]]
+  name = "google.golang.org/grpc"
+  version = "1.10.0"
+
