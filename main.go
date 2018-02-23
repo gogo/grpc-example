@@ -8,7 +8,6 @@ import (
 	"net"
 	"net/http"
 	"os"
-	"strings"
 
 	"github.com/cockroachdb/cockroach/pkg/util/protoutil"
 	"github.com/grpc-ecosystem/go-grpc-middleware/validator"
@@ -19,6 +18,7 @@ import (
 
 	pbExample "github.com/gogo/grpc-example/proto"
 	"github.com/gogo/grpc-example/server"
+	"github.com/gogo/grpc-example/static"
 )
 
 var (
@@ -35,26 +35,13 @@ func init() {
 	grpclog.SetLoggerV2(log)
 }
 
-// grpcHandlerFunc returns an http.Handler that delegates to grpcServer on incoming gRPC
-// connections or otherHandler otherwise. Copied from cockroachdb.
-func grpcHandlerFunc(grpcServer *grpc.Server, otherHandler http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// This is a partial recreation of gRPC's internal checks https://github.com/grpc/grpc-go/pull/514/files#diff-95e9a25b738459a2d3030e1e6fa2a718R61
-		if r.ProtoMajor == 2 && strings.Contains(r.Header.Get("Content-Type"), "application/grpc") {
-			grpcServer.ServeHTTP(w, r)
-		} else {
-			otherHandler.ServeHTTP(w, r)
-		}
-	})
-}
-
 // serveOpenAPI serves an OpenAPI UI on /openapi-ui/
-// Adapted  from https://github.com/philips/grpc-gateway-example/blob/a269bcb5931ca92be0ceae6130ac27ae89582ecc/cmd/serve.go#L63
+// Adapted from https://github.com/philips/grpc-gateway-example/blob/a269bcb5931ca92be0ceae6130ac27ae89582ecc/cmd/serve.go#L63
 func serveOpenAPI(mux *http.ServeMux) {
 	mime.AddExtensionType(".svg", "image/svg+xml")
 
-	// Expose files in third_party/OpenAPI/ on <host>/openapi-ui
-	fileServer := http.FileServer(http.Dir("./third_party/OpenAPI"))
+	// Expose files in static on <host>/openapi-ui
+	fileServer := http.FileServer(static.Assets)
 	prefix := "/openapi-ui/"
 	mux.Handle(prefix, http.StripPrefix(prefix, fileServer))
 }
