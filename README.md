@@ -4,6 +4,8 @@ This repo is an example of using [Go gRPC](https://github.com/grpc/grpc-go)
 and tools from the greater gRPC ecosystem together with  the
 [GoGo Protobuf Project](https://github.com/gogo/protobuf).
 
+![OpenAPI UI in action](./swagger.png)
+
 ## Running it
 
 ```bash
