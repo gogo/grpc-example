@@ -25,7 +25,7 @@ func New() *Backend {
 func (b *Backend) AddUser(ctx context.Context, user *pbExample.User) (*types.Empty, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
-	if user.GetCreateDate == nil {
+	if user.GetCreateDate() == nil {
 		now := time.Now()
 		user.CreateDate = &now
 	}
