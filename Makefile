@@ -45,6 +45,9 @@ $$GOPATH/src \
 	# Workaround for https://github.com/grpc-ecosystem/grpc-gateway/issues/229.
 	sed -i "s/empty.Empty/types.Empty/g" proto/example.pb.gw.go
 
+	# Generate static assets for OpenAPI UI
+	cd static && go run generate.go
+
 install:
 	go install \
 		./vendor/github.com/gogo/protobuf/protoc-gen-gogo \

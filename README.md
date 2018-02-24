@@ -6,10 +6,16 @@ and tools from the greater gRPC ecosystem together with  the
 
 ![OpenAPI UI in action](./swagger.png)
 
+## Installation
+
+```bash
+$ go get -u github.com/gogo/grpc-example
+```
+
 ## Running it
 
 ```bash
-$ go run main.go
+$ grpc-example
 INFO: Serving gRPC on https://localhost:10000
 INFO: dialing to target with scheme: "ipv4"
 INFO: ccResolverWrapper: sending new addresses to cc: [{localhost:10000 0  <nil>}]
@@ -88,4 +94,7 @@ $GOPATH/src \
         proto/example.proto
 # Workaround for https://github.com/grpc-ecosystem/grpc-gateway/issues/229.
 sed -i "s/empty.Empty/types.Empty/g" proto/example.pb.gw.go
+# Generate static assets for OpenAPI UI
+cd static && go run generate.go
+writing static.go
 ```
