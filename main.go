@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
 	"flag"
 	"fmt"
 	"mime"
@@ -16,14 +17,13 @@ import (
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/grpclog"
 
+	"github.com/gogo/grpc-example/insecure"
 	pbExample "github.com/gogo/grpc-example/proto"
 	"github.com/gogo/grpc-example/server"
 	"github.com/gogo/grpc-example/static"
 )
 
 var (
-	certFile    = flag.String("cert_file", "./insecure/cert.pem", "The TLS cert file")
-	keyFile     = flag.String("key_file", "./insecure/key.pem", "The TLS key file")
 	gRPCPort    = flag.Int("grpc-port", 10000, "The gRPC server port")
 	gatewayPort = flag.Int("gateway-port", 11000, "The gRPC-Gateway server port")
 )
@@ -53,12 +53,8 @@ func main() {
 	if err != nil {
 		log.Fatalln("Failed to listen:", err)
 	}
-	serverCreds, err := credentials.NewServerTLSFromFile(*certFile, *keyFile)
-	if err != nil {
-		log.Fatalln("Failed to generate server credentials:", err)
-	}
 	s := grpc.NewServer(
-		grpc.Creds(serverCreds),
+		grpc.Creds(credentials.NewServerTLSFromCert(&insecure.Cert)),
 		grpc.UnaryInterceptor(grpc_validator.UnaryServerInterceptor()),
 		grpc.StreamInterceptor(grpc_validator.StreamServerInterceptor()),
 	)
@@ -70,18 +66,13 @@ func main() {
 		log.Fatal(s.Serve(lis))
 	}()
 
-	clientCreds, err := credentials.NewClientTLSFromFile(*certFile, "")
-	if err != nil {
-		log.Fatalln("Failed to generate client credentials:", err)
-	}
-
 	// See https://github.com/grpc/grpc/blob/master/doc/naming.md
 	// for gRPC naming standard information.
 	dialAddr := fmt.Sprintf("ipv4://localhost/%[1]s", addr)
 	conn, err := grpc.DialContext(
 		context.Background(),
 		dialAddr,
-		grpc.WithTransportCredentials(clientCreds),
+		grpc.WithTransportCredentials(credentials.NewClientTLSFromCert(insecure.CertPool, "")),
 		grpc.WithBlock(),
 	)
 	if err != nil {
@@ -108,5 +99,12 @@ func main() {
 	gatewayAddr := fmt.Sprintf("localhost:%d", *gatewayPort)
 	log.Info("Serving gRPC-Gateway on https://", gatewayAddr)
 	log.Info("Serving OpenAPI Documentation on https://", gatewayAddr, "/openapi-ui/")
-	http.ListenAndServeTLS(gatewayAddr, *certFile, *keyFile, mux)
+	gwServer := http.Server{
+		Addr: gatewayAddr,
+		TLSConfig: &tls.Config{
+			Certificates: []tls.Certificate{insecure.Cert},
+		},
+		Handler: mux,
+	}
+	log.Fatalln(gwServer.ListenAndServeTLS("", ""))
 }
