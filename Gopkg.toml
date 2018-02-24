@@ -3,6 +3,7 @@ required = [
   "github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway",
   "github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger",
   "github.com/mwitkow/go-proto-validators/protoc-gen-govalidators",
+  "github.com/golang/mock/mockgen",
 ]
 
 [prune]
@@ -45,3 +46,7 @@ required = [
 [[constraint]]
   name = "google.golang.org/grpc"
   version = "1.10.0"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/golang/mock"
