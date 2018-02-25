@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/gogo/grpc-example.svg?branch=master)](https://travis-ci.org/gogo/grpc-example)
+
 # gRPC-Example
 
 This repo is an example of using [Go gRPC](https://github.com/grpc/grpc-go)
