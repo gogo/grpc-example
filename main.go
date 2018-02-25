@@ -13,6 +13,7 @@ import (
 	"github.com/cockroachdb/cockroach/pkg/util/protoutil"
 	"github.com/grpc-ecosystem/go-grpc-middleware/validator"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	"github.com/rakyll/statik/fs"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/grpclog"
@@ -20,7 +21,8 @@ import (
 	"github.com/gogo/grpc-example/insecure"
 	pbExample "github.com/gogo/grpc-example/proto"
 	"github.com/gogo/grpc-example/server"
-	"github.com/gogo/grpc-example/static"
+	// Static files
+	_ "github.com/gogo/grpc-example/statik"
 )
 
 var (
@@ -37,13 +39,19 @@ func init() {
 
 // serveOpenAPI serves an OpenAPI UI on /openapi-ui/
 // Adapted from https://github.com/philips/grpc-gateway-example/blob/a269bcb5931ca92be0ceae6130ac27ae89582ecc/cmd/serve.go#L63
-func serveOpenAPI(mux *http.ServeMux) {
+func serveOpenAPI(mux *http.ServeMux) error {
 	mime.AddExtensionType(".svg", "image/svg+xml")
 
+	statikFS, err := fs.New()
+	if err != nil {
+		return err
+	}
+
 	// Expose files in static on <host>/openapi-ui
-	fileServer := http.FileServer(static.Assets)
+	fileServer := http.FileServer(statikFS)
 	prefix := "/openapi-ui/"
 	mux.Handle(prefix, http.StripPrefix(prefix, fileServer))
+	return nil
 }
 
 func main() {
@@ -94,7 +102,10 @@ func main() {
 	}
 
 	mux.Handle("/", gwmux)
-	serveOpenAPI(mux)
+	err = serveOpenAPI(mux)
+	if err != nil {
+		log.Fatalln("Failed to serve OpenAPI UI")
+	}
 
 	gatewayAddr := fmt.Sprintf("localhost:%d", *gatewayPort)
 	log.Info("Serving gRPC-Gateway on https://", gatewayAddr)

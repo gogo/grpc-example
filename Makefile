@@ -46,7 +46,7 @@ $$GOPATH/src \
 	sed -i "s/empty.Empty/types.Empty/g" proto/example.pb.gw.go
 
 	# Generate static assets for OpenAPI UI
-	cd static && go run generate.go
+	statik -m -f -src third_party/OpenAPI/
 
 install:
 	go install \

@@ -132,22 +132,19 @@
   version = "v0.8.0"
 
 [[projects]]
+  name = "github.com/rakyll/statik"
+  packages = [
+    ".",
+    "fs"
+  ]
+  revision = "fd36b3595eb2ec8da4b8153b107f7ea08504899d"
+  version = "v0.1.1"
+
+[[projects]]
   name = "github.com/sasha-s/go-deadlock"
   packages = ["."]
   revision = "03d40e5dbd5488667a13b3c2600b2f7c2886f02f"
   version = "v0.2.0"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/shurcooL/httpfs"
-  packages = ["vfsutil"]
-  revision = "809beceb23714880abc4a382a00c05f89d13b1cc"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/shurcooL/vfsgen"
-  packages = ["."]
-  revision = "ffb13db8def02f545acc58bd288ec6057c2bbfb9"
 
 [[projects]]
   branch = "master"
@@ -226,6 +223,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "36e116055c31e87b08f3ee605b5f6c1818b96a90bc8d6e131493315f13cd9785"
+  inputs-digest = "a5a45df745ec5ed4d2546d6506f0e6247a6a8d59e67e289949c3b716b5e888f9"
   solver-name = "gps-cdcl"
   solver-version = 1
