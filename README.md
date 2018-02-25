@@ -1,6 +1,6 @@
+# gRPC-Example
 [![Build Status](https://travis-ci.org/gogo/grpc-example.svg?branch=master)](https://travis-ci.org/gogo/grpc-example)
 
-# gRPC-Example
 
 This repo is an example of using [Go gRPC](https://github.com/grpc/grpc-go)
 and tools from the greater gRPC ecosystem together with  the
@@ -41,7 +41,8 @@ go install \
         ./vendor/github.com/gogo/protobuf/protoc-gen-gogo \
         ./vendor/github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway \
         ./vendor/github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger \
-        ./vendor/github.com/mwitkow/go-proto-validators/protoc-gen-govalidators
+        ./vendor/github.com/mwitkow/go-proto-validators/protoc-gen-govalidators \
+        ./vendor/github.com/rakyll/statik
 ```
 
 It also requires you to have the Google Protobuf compiler `protoc` installed.
