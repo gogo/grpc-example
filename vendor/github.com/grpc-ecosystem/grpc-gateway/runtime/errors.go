@@ -5,6 +5,8 @@ import (
 	"net/http"
 
 	"github.com/golang/protobuf/proto"
+	"github.com/golang/protobuf/ptypes"
+	"github.com/golang/protobuf/ptypes/any"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/grpclog"
@@ -33,7 +35,7 @@ func HTTPStatusFromCode(code codes.Code) int {
 	case codes.Unauthenticated:
 		return http.StatusUnauthorized
 	case codes.ResourceExhausted:
-		return http.StatusForbidden
+		return http.StatusServiceUnavailable
 	case codes.FailedPrecondition:
 		return http.StatusPreconditionFailed
 	case codes.Aborted:
@@ -63,11 +65,12 @@ var (
 )
 
 type errorBody struct {
-	Error string `protobuf:"bytes,1,name=error" json:"error"`
-	Code  int32  `protobuf:"varint,2,name=code" json:"code"`
+	Error   string     `protobuf:"bytes,1,name=error" json:"error"`
+	Code    int32      `protobuf:"varint,2,name=code" json:"code"`
+	Details []*any.Any `protobuf:"bytes,3,rep,name=details" json:"details,omitempty"`
 }
 
-//Make this also conform to proto.Message for builtin JSONPb Marshaler
+// Make this also conform to proto.Message for builtin JSONPb Marshaler
 func (e *errorBody) Reset()         { *e = errorBody{} }
 func (e *errorBody) String() string { return proto.CompactTextString(e) }
 func (*errorBody) ProtoMessage()    {}
@@ -92,6 +95,17 @@ func DefaultHTTPError(ctx context.Context, mux *ServeMux, marshaler Marshaler, w
 	body := &errorBody{
 		Error: s.Message(),
 		Code:  int32(s.Code()),
+	}
+
+	for _, detail := range s.Details() {
+		if det, ok := detail.(proto.Message); ok {
+			a, err := ptypes.MarshalAny(det)
+			if err != nil {
+				grpclog.Printf("Failed to marshal any: %v", err)
+			} else {
+				body.Details = append(body.Details, a)
+			}
+		}
 	}
 
 	buf, merr := marshaler.Marshal(body)
