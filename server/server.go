@@ -5,8 +5,12 @@ import (
 	"sync"
 	"time"
 
-	pbExample "github.com/gogo/grpc-example/proto"
 	"github.com/gogo/protobuf/types"
+	"google.golang.org/genproto/googleapis/rpc/errdetails"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
+	pbExample "github.com/gogo/grpc-example/proto"
 )
 
 type Backend struct {
@@ -25,11 +29,34 @@ func New() *Backend {
 func (b *Backend) AddUser(ctx context.Context, user *pbExample.User) (*types.Empty, error) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
+
+	if len(b.users) == 0 && user.GetRole() != pbExample.Role_ADMIN {
+		st := status.New(codes.InvalidArgument, "first user created must be an admin")
+		// Note that st.WithDetails requires a proto.Message that has been registered
+		// with golang/protobuf to work. This in turn requires us to instrument our
+		// jsonpb Marshaller such that it can resolve both gogo/protobuf and golang/protobuf Any messages.
+		detSt, err := st.WithDetails(&errdetails.BadRequest{
+			FieldViolations: []*errdetails.BadRequest_FieldViolation{
+				{
+					Field:       "role",
+					Description: "The first user created must have the role of an ADMIN",
+				},
+			},
+		})
+		if err == nil {
+			return nil, detSt.Err()
+		}
+
+		return nil, st.Err()
+	}
+
 	if user.GetCreateDate() == nil {
 		now := time.Now()
 		user.CreateDate = &now
 	}
+
 	b.users = append(b.users, user)
+
 	return nil, nil
 }
 
@@ -48,6 +75,7 @@ func (b *Backend) ListUsers(_ *types.Empty, srv pbExample.UserService_ListUsersS
 }
 
 func (b *Backend) ListUsersByRole(req *pbExample.UserRole, srv pbExample.UserService_ListUsersByRoleServer) error {
+
 	b.mu.RLock()
 	defer b.mu.RUnlock()
 
