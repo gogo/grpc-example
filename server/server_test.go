@@ -6,6 +6,9 @@ import (
 	"time"
 
 	"github.com/golang/mock/gomock"
+	"google.golang.org/genproto/googleapis/rpc/errdetails"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	pbExample "github.com/gogo/grpc-example/proto"
 	"github.com/gogo/grpc-example/server"
@@ -18,7 +21,7 @@ func TestAddUserListUsers(t *testing.T) {
 	cd := time.Date(2000, 0, 0, 0, 0, 0, 1, time.UTC)
 	u1 := &pbExample.User{
 		ID:         1,
-		Role:       pbExample.Role_GUEST,
+		Role:       pbExample.Role_ADMIN,
 		CreateDate: &cd,
 	}
 	u2 := &pbExample.User{
@@ -52,7 +55,7 @@ func TestAddUserSetsCreateDate(t *testing.T) {
 	b := server.New()
 	u := &pbExample.User{
 		ID:   1,
-		Role: pbExample.Role_GUEST,
+		Role: pbExample.Role_ADMIN,
 	}
 	_, err := b.AddUser(context.Background(), u)
 	if err != nil {
@@ -88,21 +91,21 @@ func TestAddUserSetsCreateDate(t *testing.T) {
 func TestListUsersByRole(t *testing.T) {
 	b := server.New()
 	cd := time.Date(2000, 0, 0, 0, 0, 0, 1, time.UTC)
-	guest := &pbExample.User{
-		ID:         1,
-		Role:       pbExample.Role_GUEST,
-		CreateDate: &cd,
-	}
 	admin := &pbExample.User{
 		ID:         2,
 		Role:       pbExample.Role_ADMIN,
 		CreateDate: &cd,
 	}
-	_, err := b.AddUser(context.Background(), guest)
+	guest := &pbExample.User{
+		ID:         1,
+		Role:       pbExample.Role_GUEST,
+		CreateDate: &cd,
+	}
+	_, err := b.AddUser(context.Background(), admin)
 	if err != nil {
 		t.Fatal("Failed to add guest user: ", err)
 	}
-	_, err = b.AddUser(context.Background(), admin)
+	_, err = b.AddUser(context.Background(), guest)
 	if err != nil {
 		t.Fatal("Failed to add admin user: ", err)
 	}
@@ -117,4 +120,43 @@ func TestListUsersByRole(t *testing.T) {
 	}
 
 	ctrl.Finish()
+}
+
+func TestAddUserNonAdmin(t *testing.T) {
+	b := server.New()
+	u1 := &pbExample.User{
+		ID:   1,
+		Role: pbExample.Role_GUEST,
+	}
+	_, err := b.AddUser(context.Background(), u1)
+	if err == nil {
+		t.Fatal("Expected error, got nil")
+	}
+
+	st, ok := status.FromError(err)
+	if !ok {
+		t.Fatalf("Expected error to be a gRPC status, was %#v", err)
+	}
+
+	if st.Code() != codes.InvalidArgument {
+		t.Fatalf("Expected error code to be %v, was %v", codes.InvalidArgument, st.Code())
+	}
+
+	if len(st.Details()) != 1 {
+		t.Fatalf("Expected exactly 1 error detail, was %d", len(st.Details()))
+	}
+
+	reqErr, ok := st.Details()[0].(*errdetails.BadRequest)
+	if !ok {
+		t.Fatalf("Expected error detail to be of type %T, was %T", &errdetails.BadRequest{}, st.Details()[0])
+	}
+
+	if len(reqErr.GetFieldViolations()) != 1 {
+		t.Fatalf("Expected 1 field violation, was %d", len(reqErr.GetFieldViolations()))
+	}
+
+	fv := reqErr.GetFieldViolations()[0]
+	if fv.GetField() != "role" {
+		t.Fatalf(`Expected field violation to be for "role", was %s`, fv.GetField())
+	}
 }
