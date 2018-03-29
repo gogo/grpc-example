@@ -1,7 +1,6 @@
 # gRPC-Example
 [![Build Status](https://travis-ci.org/gogo/grpc-example.svg?branch=master)](https://travis-ci.org/gogo/grpc-example)
 
-
 This repo is an example of using [Go gRPC](https://github.com/grpc/grpc-go)
 and tools from the greater gRPC ecosystem together with  the
 [GoGo Protobuf Project](https://github.com/gogo/protobuf).
@@ -19,11 +18,11 @@ $ go get -u github.com/gogo/grpc-example
 ```bash
 $ grpc-example
 INFO: Serving gRPC on https://localhost:10000
-INFO: dialing to target with scheme: "ipv4"
+INFO: parsed scheme: "passthrough"
 INFO: ccResolverWrapper: sending new addresses to cc: [{localhost:10000 0  <nil>}]
 INFO: ClientConn switching balancer to "pick_first"
-INFO: pickfirstBalancer: HandleSubConnStateChange: 0xc420097c00, CONNECTING
-INFO: pickfirstBalancer: HandleSubConnStateChange: 0xc420097c00, READY
+INFO: pickfirstBalancer: HandleSubConnStateChange: 0xc420097cd0, CONNECTING
+INFO: pickfirstBalancer: HandleSubConnStateChange: 0xc420097cd0, READY
 INFO: Serving gRPC-Gateway on https://localhost:11000
 INFO: Serving OpenAPI Documentation on https://localhost:11000/openapi-ui/
 ```
@@ -81,23 +80,25 @@ protoc \
         --gogo_out=plugins=grpc,\
 Mgoogle/protobuf/timestamp.proto=github.com/gogo/protobuf/types,\
 Mgoogle/protobuf/empty.proto=github.com/gogo/protobuf/types,\
-Mgoogle/api/annotations.proto=github.com/gogo/googleapis/google/api:\
+Mgoogle/api/annotations.proto=github.com/gogo/googleapis/google/api,\
+Mgoogle/protobuf/field_mask.proto=github.com/gogo/protobuf/types:\
 $GOPATH/src/ \
         --grpc-gateway_out=\
 Mgoogle/protobuf/timestamp.proto=github.com/gogo/protobuf/types,\
 Mgoogle/protobuf/empty.proto=github.com/gogo/protobuf/types,\
-Mgoogle/api/annotations.proto=github.com/gogo/googleapis/google/api:\
+Mgoogle/api/annotations.proto=github.com/gogo/googleapis/google/api,\
+Mgoogle/protobuf/field_mask.proto=github.com/gogo/protobuf/types:\
 $GOPATH/src/ \
         --swagger_out=third_party/OpenAPI/ \
         --govalidators_out=gogoimport=true,\
 Mgoogle/protobuf/timestamp.proto=github.com/gogo/protobuf/types,\
 Mgoogle/protobuf/empty.proto=github.com/gogo/protobuf/types,\
-Mgoogle/api/annotations.proto=github.com/gogo/googleapis/google/api:\
+Mgoogle/api/annotations.proto=github.com/gogo/googleapis/google/api,\
+Mgoogle/protobuf/field_mask.proto=github.com/gogo/protobuf/types:\
 $GOPATH/src \
         proto/example.proto
 # Workaround for https://github.com/grpc-ecosystem/grpc-gateway/issues/229.
 sed -i "s/empty.Empty/types.Empty/g" proto/example.pb.gw.go
 # Generate static assets for OpenAPI UI
-cd static && go run generate.go
-writing static.go
+statik -m -f -src third_party/OpenAPI/
 ```
