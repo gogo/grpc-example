@@ -76,7 +76,7 @@ func main() {
 
 	// See https://github.com/grpc/grpc/blob/master/doc/naming.md
 	// for gRPC naming standard information.
-	dialAddr := fmt.Sprintf("ipv4://localhost/%s", addr)
+	dialAddr := fmt.Sprintf("passthrough://localhost/%s", addr)
 	conn, err := grpc.DialContext(
 		context.Background(),
 		dialAddr,
