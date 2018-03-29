@@ -31,29 +31,41 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/golang/protobuf/proto"
-	"github.com/golang/protobuf/ptypes"
+	"github.com/gogo/googleapis/google/rpc"
+	"github.com/gogo/protobuf/proto"
+	"github.com/gogo/protobuf/types"
+	"github.com/golang/protobuf/ptypes/any"
 	spb "google.golang.org/genproto/googleapis/rpc/status"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // statusError is an alias of a status proto.  It implements error and Status,
 // and a nil statusError should never be returned by this package.
-type statusError spb.Status
+type statusError rpc.Status
 
 func (se *statusError) Error() string {
-	p := (*spb.Status)(se)
+	p := (*rpc.Status)(se)
 	return fmt.Sprintf("rpc error: code = %s desc = %s", codes.Code(p.GetCode()), p.GetMessage())
 }
 
-func (se *statusError) GRPCStatus() *Status {
-	return &Status{s: (*spb.Status)(se)}
+// Status converts the gogo/statusError to a grpc/status.
+func (se *statusError) GRPCStatus() *status.Status {
+	p := (*rpc.Status)(se)
+	s := &spb.Status{
+		Code:    p.GetCode(),
+		Message: p.GetMessage(),
+	}
+	for _, detail := range p.GetDetails() {
+		s.Details = append(s.GetDetails(), (*any.Any)(detail))
+	}
+	return status.FromProto(s)
 }
 
 // Status represents an RPC status code, message, and details.  It is immutable
 // and should be created with New, Newf, or FromProto.
 type Status struct {
-	s *spb.Status
+	s *rpc.Status
 }
 
 // Code returns the status code contained in s.
@@ -72,12 +84,12 @@ func (s *Status) Message() string {
 	return s.s.Message
 }
 
-// Proto returns s's status as an spb.Status proto message.
-func (s *Status) Proto() *spb.Status {
+// Proto returns s's status as an rpc.Status proto message.
+func (s *Status) Proto() *rpc.Status {
 	if s == nil {
 		return nil
 	}
-	return proto.Clone(s.s).(*spb.Status)
+	return proto.Clone(s.s).(*rpc.Status)
 }
 
 // Err returns an immutable error representing s; returns nil if s.Code() is
@@ -91,7 +103,7 @@ func (s *Status) Err() error {
 
 // New returns a Status representing c and msg.
 func New(c codes.Code, msg string) *Status {
-	return &Status{s: &spb.Status{Code: int32(c), Message: msg}}
+	return &Status{s: &rpc.Status{Code: int32(c), Message: msg}}
 }
 
 // Newf returns New(c, fmt.Sprintf(format, a...)).
@@ -110,26 +122,39 @@ func Errorf(c codes.Code, format string, a ...interface{}) error {
 }
 
 // ErrorProto returns an error representing s.  If s.Code is OK, returns nil.
-func ErrorProto(s *spb.Status) error {
+func ErrorProto(s *rpc.Status) error {
 	return FromProto(s).Err()
 }
 
 // FromProto returns a Status representing s.
-func FromProto(s *spb.Status) *Status {
-	return &Status{s: proto.Clone(s).(*spb.Status)}
+func FromProto(s *rpc.Status) *Status {
+	return &Status{s: proto.Clone(s).(*rpc.Status)}
 }
 
 // FromError returns a Status representing err if it was produced from this
-// package or has a method `GRPCStatus() *Status`. Otherwise, ok is false and a
-// Status is returned with codes.Unknown and the original error message.
+// package or the standard grpc/status package. Otherwise, ok is false and
+// a Status is returned with codes.Unknown and the original error message.
 func FromError(err error) (s *Status, ok bool) {
 	if err == nil {
-		return &Status{s: &spb.Status{Code: int32(codes.OK)}}, true
+		return &Status{s: &rpc.Status{Code: int32(codes.OK)}}, true
 	}
-	if se, ok := err.(interface{ GRPCStatus() *Status }); ok {
-		return se.GRPCStatus(), true
+	if se, ok := err.(interface{ GRPCStatus() *status.Status }); ok {
+		return FromGRPCStatus(se.GRPCStatus()), true
 	}
 	return New(codes.Unknown, err.Error()), false
+}
+
+// FromGRPCStatus converts a grpc.Status to gogo.Status.
+func FromGRPCStatus(st *status.Status) *Status {
+	p := st.Proto()
+	pb := &rpc.Status{
+		Code:    p.GetCode(),
+		Message: p.GetMessage(),
+	}
+	for _, detail := range p.GetDetails() {
+		pb.Details = append(pb.GetDetails(), (*types.Any)(detail))
+	}
+	return FromProto(pb)
 }
 
 // Convert is a convenience function which removes the need to handle the
@@ -148,7 +173,7 @@ func (s *Status) WithDetails(details ...proto.Message) (*Status, error) {
 	// s.Code() != OK implies that s.Proto() != nil.
 	p := s.Proto()
 	for _, detail := range details {
-		any, err := ptypes.MarshalAny(detail)
+		any, err := types.MarshalAny(detail)
 		if err != nil {
 			return nil, err
 		}
@@ -165,8 +190,8 @@ func (s *Status) Details() []interface{} {
 	}
 	details := make([]interface{}, 0, len(s.s.Details))
 	for _, any := range s.s.Details {
-		detail := &ptypes.DynamicAny{}
-		if err := ptypes.UnmarshalAny(any, detail); err != nil {
+		detail := &types.DynamicAny{}
+		if err := types.UnmarshalAny(any, detail); err != nil {
 			details = append(details, err)
 			continue
 		}
@@ -182,8 +207,8 @@ func Code(err error) codes.Code {
 	if err == nil {
 		return codes.OK
 	}
-	if se, ok := err.(interface{ GRPCStatus() *Status }); ok {
-		return se.GRPCStatus().Code()
+	if se, ok := err.(interface{ Status() *status.Status }); ok {
+		return se.Status().Code()
 	}
 	return codes.Unknown
 }

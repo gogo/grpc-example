@@ -8,14 +8,17 @@
     "pkg/util/protoutil",
     "pkg/util/syncutil"
   ]
-  revision = "ec52ded95a5235d71f26b6cbc59924bd6733fb3a"
-  version = "v1.1.5"
+  revision = "25b1f1d26014a52272fa1043e2aa031b91807597"
+  version = "v1.1.7"
 
 [[projects]]
   branch = "master"
   name = "github.com/gogo/googleapis"
-  packages = ["google/api"]
-  revision = "262acac113c2f2bc25bbf810056cd382f61b8386"
+  packages = [
+    "google/api",
+    "google/rpc"
+  ]
+  revision = "0cd9801be74a10d5ac39d69626eac8255ffcd502"
 
 [[projects]]
   name = "github.com/gogo/protobuf"
@@ -51,6 +54,12 @@
   ]
   revision = "1adfc126b41513cc696b209667c8656ea7aac67c"
   version = "v1.0.0"
+
+[[projects]]
+  name = "github.com/gogo/status"
+  packages = ["."]
+  revision = "f3652e1570e19992699cce3362408e20682effdf"
+  version = "v1.0.1"
 
 [[projects]]
   branch = "master"
@@ -89,7 +98,7 @@
   branch = "master"
   name = "github.com/grpc-ecosystem/go-grpc-middleware"
   packages = ["validator"]
-  revision = "d0c54e68681ec7999ac17864470f3bee6521ba2b"
+  revision = "aed189ae50cf2ee326c1de8c083f3187e574e0d8"
 
 [[projects]]
   branch = "master"
@@ -158,10 +167,9 @@
     "lex/httplex",
     "trace"
   ]
-  revision = "cbe0f9307d0156177f9dd5dc85da1a31abc5f2fb"
+  revision = "6078986fec03a1dcc236c34816c71b0e05018fda"
 
 [[projects]]
-  branch = "master"
   name = "golang.org/x/text"
   packages = [
     "collate",
@@ -179,17 +187,17 @@
     "unicode/norm",
     "unicode/rangetable"
   ]
-  revision = "4e4a3210bb54bb31f6ab2cdca2edcc0b50c420c1"
+  revision = "f21a4dfb5e38f5895301dc265a8def02365cc3d0"
+  version = "v0.3.0"
 
 [[projects]]
   branch = "master"
   name = "google.golang.org/genproto"
   packages = [
     "googleapis/api/annotations",
-    "googleapis/rpc/errdetails",
     "googleapis/rpc/status"
   ]
-  revision = "2b5a72b8730b0b16380010cfe5286c42108d88e7"
+  revision = "ab0870e398d5dd054b868c0db1481ab029b9a9f2"
 
 [[projects]]
   name = "google.golang.org/grpc"
@@ -218,12 +226,12 @@
     "tap",
     "transport"
   ]
-  revision = "8e4536a86ab602859c20df5ebfd0bd4228d08655"
-  version = "v1.10.0"
+  revision = "afc05b9e1d36f289ea16ba294894486a3e458246"
+  version = "v1.11.0"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "a274d4a6f5f061259002b8f0bd1851bbcc005a9c1e10c30d8daec5a76b15ce1d"
+  inputs-digest = "36bffc13c2e65d53fd937fb3bfecb71a9a0fda9f77354cca30306e06c4582ae6"
   solver-name = "gps-cdcl"
   solver-version = 1
