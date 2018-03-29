@@ -5,10 +5,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/gogo/googleapis/google/rpc"
 	"github.com/gogo/protobuf/types"
-	"google.golang.org/genproto/googleapis/rpc/errdetails"
+	"github.com/gogo/status"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 
 	pbExample "github.com/gogo/grpc-example/proto"
 )
@@ -31,12 +31,9 @@ func (b *Backend) AddUser(ctx context.Context, user *pbExample.User) (*types.Emp
 	defer b.mu.Unlock()
 
 	if len(b.users) == 0 && user.GetRole() != pbExample.Role_ADMIN {
-		st := status.New(codes.InvalidArgument, "first user created must be an admin")
-		// Note that st.WithDetails requires a proto.Message that has been registered
-		// with golang/protobuf to work. This in turn requires us to instrument our
-		// jsonpb Marshaller such that it can resolve both gogo/protobuf and golang/protobuf Any messages.
-		detSt, err := st.WithDetails(&errdetails.BadRequest{
-			FieldViolations: []*errdetails.BadRequest_FieldViolation{
+		st := status.New(codes.InvalidArgument, "First user created must be an admin")
+		detSt, err := st.WithDetails(&rpc.BadRequest{
+			FieldViolations: []*rpc.BadRequest_FieldViolation{
 				{
 					Field:       "role",
 					Description: "The first user created must have the role of an ADMIN",
@@ -46,7 +43,6 @@ func (b *Backend) AddUser(ctx context.Context, user *pbExample.User) (*types.Emp
 		if err == nil {
 			return nil, detSt.Err()
 		}
-
 		return nil, st.Err()
 	}
 
@@ -63,6 +59,23 @@ func (b *Backend) AddUser(ctx context.Context, user *pbExample.User) (*types.Emp
 func (b *Backend) ListUsers(_ *types.Empty, srv pbExample.UserService_ListUsersServer) error {
 	b.mu.RLock()
 	defer b.mu.RUnlock()
+
+	if len(b.users) == 0 {
+		st := status.New(codes.FailedPrecondition, "No users have been created")
+		detSt, err := st.WithDetails(&rpc.PreconditionFailure{
+			Violations: []*rpc.PreconditionFailure_Violation{
+				{
+					Type:        "USER",
+					Subject:     "no users created",
+					Description: "No users have been created",
+				},
+			},
+		})
+		if err == nil {
+			return detSt.Err()
+		}
+		return st.Err()
+	}
 
 	for _, user := range b.users {
 		err := srv.Send(user)

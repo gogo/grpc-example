@@ -5,8 +5,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gogo/googleapis/google/rpc"
+	"github.com/gogo/protobuf/proto"
 	"github.com/golang/mock/gomock"
-	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -142,21 +143,60 @@ func TestAddUserNonAdmin(t *testing.T) {
 		t.Fatalf("Expected error code to be %v, was %v", codes.InvalidArgument, st.Code())
 	}
 
-	if len(st.Details()) != 1 {
-		t.Fatalf("Expected exactly 1 error detail, was %d", len(st.Details()))
+	pb := st.Proto()
+	if len(pb.GetDetails()) != 1 {
+		t.Fatalf("Expected exactly 1 error detail, was %d", len(pb.GetDetails()))
 	}
 
-	reqErr, ok := st.Details()[0].(*errdetails.BadRequest)
-	if !ok {
-		t.Fatalf("Expected error detail to be of type %T, was %T", &errdetails.BadRequest{}, st.Details()[0])
+	br := &rpc.BadRequest{}
+	err = proto.Unmarshal(pb.GetDetails()[0].GetValue(), br)
+	if err != nil {
+		t.Fatalf("Expected error detail to be of type %T, was %s", &rpc.BadRequest{}, pb.GetDetails()[0].GetTypeUrl())
 	}
 
-	if len(reqErr.GetFieldViolations()) != 1 {
-		t.Fatalf("Expected 1 field violation, was %d", len(reqErr.GetFieldViolations()))
+	if len(br.GetFieldViolations()) != 1 {
+		t.Fatalf("Expected 1 field violation, was %d", len(br.GetFieldViolations()))
 	}
 
-	fv := reqErr.GetFieldViolations()[0]
+	fv := br.GetFieldViolations()[0]
 	if fv.GetField() != "role" {
 		t.Fatalf(`Expected field violation to be for "role", was %s`, fv.GetField())
+	}
+}
+
+func TestListUsersNoUsers(t *testing.T) {
+	b := server.New()
+	err := b.ListUsers(nil, nil)
+	if err == nil {
+		t.Fatal("Expected error, got nil")
+	}
+
+	st, ok := status.FromError(err)
+	if !ok {
+		t.Fatalf("Expected error to be a gRPC status, was %#v", err)
+	}
+
+	if st.Code() != codes.FailedPrecondition {
+		t.Fatalf("Expected error code to be %v, was %v", codes.FailedPrecondition, st.Code())
+	}
+
+	pb := st.Proto()
+	if len(pb.GetDetails()) != 1 {
+		t.Fatalf("Expected exactly 1 error detail, was %d", len(pb.GetDetails()))
+	}
+
+	pf := &rpc.PreconditionFailure{}
+	err = proto.Unmarshal(pb.GetDetails()[0].GetValue(), pf)
+	if err != nil {
+		t.Fatalf("Expected error detail to be of type %T, was %s", &rpc.PreconditionFailure{}, pb.GetDetails()[0].GetTypeUrl())
+	}
+
+	if len(pf.GetViolations()) != 1 {
+		t.Fatalf("Expected 1 field violation, was %d", len(pf.GetViolations()))
+	}
+
+	v := pf.GetViolations()[0]
+	if v.GetType() != "USER" {
+		t.Fatalf(`Expected field violation to be for "USER", was %s`, v.GetType())
 	}
 }

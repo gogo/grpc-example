@@ -9,12 +9,8 @@ import (
 	"net"
 	"net/http"
 	"os"
-	"reflect"
-	"strings"
 
 	"github.com/cockroachdb/cockroach/pkg/util/protoutil"
-	gogoproto "github.com/gogo/protobuf/proto"
-	golangproto "github.com/golang/protobuf/proto"
 	"github.com/grpc-ecosystem/go-grpc-middleware/validator"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/rakyll/statik/fs"
@@ -58,30 +54,6 @@ func serveOpenAPI(mux *http.ServeMux) error {
 	return nil
 }
 
-// anyResolver is used to implement custom any type resolution
-// with the cockroachdb protoutil gogo.JSONPb wrapper.
-// This means the JSON marshaller can marshal Any messages
-// registered with either gogo/protobuf or golang/protobuf.
-type anyResolver struct{}
-
-func (a anyResolver) Resolve(typeURL string) (gogoproto.Message, error) {
-	mname := typeURL
-	if slash := strings.LastIndex(mname, "/"); slash >= 0 {
-		mname = mname[slash+1:]
-	}
-	// Attempt to use gogo/protobuf resolver
-	mt := gogoproto.MessageType(mname)
-	if mt == nil {
-		// Fallback to golang/protobuf resolver
-		mt = golangproto.MessageType(mname)
-		if mt == nil {
-			// Neither worked, error
-			return nil, fmt.Errorf("unknown message type %q", mname)
-		}
-	}
-	return reflect.New(mt.Elem()).Interface().(gogoproto.Message), nil
-}
-
 func main() {
 	flag.Parse()
 	addr := fmt.Sprintf("localhost:%d", *gRPCPort)
@@ -120,10 +92,12 @@ func main() {
 	jsonpb := &protoutil.JSONPb{
 		EmitDefaults: true,
 		Indent:       "  ",
-		AnyResolver:  anyResolver{},
 	}
 	gwmux := runtime.NewServeMux(
 		runtime.WithMarshalerOption(runtime.MIMEWildcard, jsonpb),
+		// This is necessary to get error details properly
+		// marshalled in unary requests.
+		runtime.WithProtoErrorHandler(runtime.DefaultHTTPProtoErrorHandler),
 	)
 	err = pbExample.RegisterUserServiceHandler(context.Background(), gwmux, conn)
 	if err != nil {
