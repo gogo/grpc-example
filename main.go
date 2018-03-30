@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/cockroachdb/cockroach/pkg/util/protoutil"
+	"github.com/gogo/gateway"
 	"github.com/grpc-ecosystem/go-grpc-middleware/validator"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/rakyll/statik/fs"
@@ -89,9 +89,10 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	jsonpb := &protoutil.JSONPb{
+	jsonpb := &gateway.JSONPb{
 		EmitDefaults: true,
 		Indent:       "  ",
+		OrigName:     true,
 	}
 	gwmux := runtime.NewServeMux(
 		runtime.WithMarshalerOption(runtime.MIMEWildcard, jsonpb),

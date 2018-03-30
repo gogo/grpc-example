@@ -33,8 +33,8 @@ required = [
   name = "github.com/gogo/googleapis"
 
 [[constraint]]
+  branch = "master"
   name = "github.com/gogo/protobuf"
-  version = "1.0.0"
 
 [[constraint]]
   name = "github.com/gogo/status"

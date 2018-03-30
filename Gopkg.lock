@@ -2,14 +2,16 @@
 
 
 [[projects]]
-  name = "github.com/cockroachdb/cockroach"
-  packages = [
-    "pkg/util/httputil",
-    "pkg/util/protoutil",
-    "pkg/util/syncutil"
-  ]
-  revision = "25b1f1d26014a52272fa1043e2aa031b91807597"
-  version = "v1.1.7"
+  name = "github.com/fatih/structs"
+  packages = ["."]
+  revision = "a720dfa8df582c51dee1b36feabb906bde1588bd"
+  version = "v1.0"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/gogo/gateway"
+  packages = ["."]
+  revision = "6d3dfbe4e3b52add3800488f526462e69bce526a"
 
 [[projects]]
   branch = "master"
@@ -21,6 +23,7 @@
   revision = "0cd9801be74a10d5ac39d69626eac8255ffcd502"
 
 [[projects]]
+  branch = "master"
   name = "github.com/gogo/protobuf"
   packages = [
     "gogoproto",
@@ -52,8 +55,7 @@
     "vanity",
     "vanity/command"
   ]
-  revision = "1adfc126b41513cc696b209667c8656ea7aac67c"
-  version = "v1.0.0"
+  revision = "1ef32a8b9fc3f8ec940126907cedb5998f6318e4"
 
 [[projects]]
   name = "github.com/gogo/status"
@@ -129,18 +131,6 @@
   revision = "a55ca57f374a8846924b030f534d8b8211508cf0"
 
 [[projects]]
-  branch = "master"
-  name = "github.com/petermattis/goid"
-  packages = ["."]
-  revision = "b0b1615b78e5ee59739545bb38426383b2cda4c9"
-
-[[projects]]
-  name = "github.com/pkg/errors"
-  packages = ["."]
-  revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
-  version = "v0.8.0"
-
-[[projects]]
   name = "github.com/rakyll/statik"
   packages = [
     ".",
@@ -148,12 +138,6 @@
   ]
   revision = "fd36b3595eb2ec8da4b8153b107f7ea08504899d"
   version = "v0.1.1"
-
-[[projects]]
-  name = "github.com/sasha-s/go-deadlock"
-  packages = ["."]
-  revision = "03d40e5dbd5488667a13b3c2600b2f7c2886f02f"
-  version = "v0.2.0"
 
 [[projects]]
   branch = "master"
@@ -232,6 +216,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "36bffc13c2e65d53fd937fb3bfecb71a9a0fda9f77354cca30306e06c4582ae6"
+  inputs-digest = "29b58d190070578af16de496872b158233403d37aca20da6eab3735dc197408c"
   solver-name = "gps-cdcl"
   solver-version = 1
