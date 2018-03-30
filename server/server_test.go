@@ -7,6 +7,7 @@ import (
 
 	"github.com/gogo/googleapis/google/rpc"
 	"github.com/gogo/protobuf/proto"
+	"github.com/gogo/protobuf/types"
 	"github.com/golang/mock/gomock"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -216,5 +217,73 @@ func TestListUsersNoUsers(t *testing.T) {
 	v := pf.GetViolations()[0]
 	if v.GetType() != "USER" {
 		t.Fatalf(`Expected field violation to be for "USER", was %s`, v.GetType())
+	}
+}
+
+func TestUpdateUser(t *testing.T) {
+	b := server.New()
+	u := &pbExample.User{
+		ID:   1,
+		Role: pbExample.Role_ADMIN,
+	}
+	_, err := b.AddUser(context.Background(), u)
+	if err != nil {
+		t.Fatal("Failed to add user: ", err)
+	}
+
+	req := &pbExample.UpdateUserRequest{
+		User: &pbExample.User{
+			ID:   u.GetID(),
+			Role: pbExample.Role_GUEST,
+		},
+		UpdateMask: &types.FieldMask{
+			Paths: []string{"role"},
+		},
+	}
+	newUser, err := b.UpdateUser(context.Background(), req)
+	if err != nil {
+		t.Fatal("Failed to update user: ", err)
+	}
+
+	if newUser.GetRole() != pbExample.Role_GUEST {
+		t.Fatalf("Role was not updated to GUEST, was %s", newUser.GetRole().String())
+	}
+
+	ctrl := gomock.NewController(t)
+	mockServer := NewMockUserService_ListUsersServer(ctrl)
+	mockServer.EXPECT().Send(&pbExample.User{
+		Role:       pbExample.Role_GUEST,
+		ID:         u.GetID(),
+		CreateDate: newUser.GetCreateDate(),
+	}).Return(nil)
+
+	err = b.ListUsers(nil, mockServer)
+	if err != nil {
+		t.Fatal("Failed to list users: ", err)
+	}
+
+	ctrl.Finish()
+}
+
+func TestUpdateMissingUser(t *testing.T) {
+	b := server.New()
+
+	req := &pbExample.UpdateUserRequest{
+		User: &pbExample.User{
+			ID:   1,
+			Role: pbExample.Role_GUEST,
+		},
+		UpdateMask: &types.FieldMask{
+			Paths: []string{"role"},
+		},
+	}
+	_, err := b.UpdateUser(context.Background(), req)
+	if err == nil {
+		t.Fatal("Unexpectedly did not error when updating missing user")
+	}
+
+	st := status.Convert(err)
+	if st.Code() != codes.NotFound {
+		t.Fatalf("Unexpected error code received, got %s expected %s", st.Code().String(), codes.NotFound.String())
 	}
 }

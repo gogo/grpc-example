@@ -8,6 +8,7 @@ package example;
 
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/field_mask.proto";
 import "google/api/annotations.proto";
 import "protoc-gen-swagger/options/annotations.proto";
 import "github.com/gogo/protobuf/gogoproto/gogo.proto";
@@ -52,6 +53,12 @@ service UserService {
             get: "/api/v1/users/role"
         };
     }
+    rpc UpdateUser(UpdateUserRequest) returns (User) {
+        option (google.api.http) = {
+            patch: "/api/v1/user/{user.id}"
+            body: "user"
+        };
+    }
 }
 
 enum Role {
@@ -76,4 +83,13 @@ message User {
 
 message UserRole {
     Role role = 1;
+}
+
+message UpdateUserRequest {
+    // The user resource which replaces the resource on the server.
+    User user = 1;
+
+    // The update mask applies to the resource. For the `FieldMask` definition,
+    // see https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#fieldmask
+    google.protobuf.FieldMask update_mask = 2;
 }
