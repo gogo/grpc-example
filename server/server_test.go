@@ -26,7 +26,7 @@ func TestAddUserListUsers(t *testing.T) {
 		CreateDate: &cd,
 	}
 	u2 := &pbExample.User{
-		ID:         1,
+		ID:         2,
 		Role:       pbExample.Role_GUEST,
 		CreateDate: &cd,
 	}
@@ -50,6 +50,24 @@ func TestAddUserListUsers(t *testing.T) {
 	}
 
 	ctrl.Finish()
+}
+
+func TestAddUserDuplicateFails(t *testing.T) {
+	b := server.New()
+	cd := time.Date(2000, 0, 0, 0, 0, 0, 1, time.UTC)
+	u1 := &pbExample.User{
+		ID:         1,
+		Role:       pbExample.Role_ADMIN,
+		CreateDate: &cd,
+	}
+	_, err := b.AddUser(context.Background(), u1)
+	if err != nil {
+		t.Fatal("Failed to add user: ", err)
+	}
+	_, err = b.AddUser(context.Background(), u1)
+	if err == nil {
+		t.Fatal("was unexpectedly able to add user twice")
+	}
 }
 
 func TestAddUserSetsCreateDate(t *testing.T) {

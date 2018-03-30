@@ -46,6 +46,13 @@ func (b *Backend) AddUser(ctx context.Context, user *pbExample.User) (*types.Emp
 		return nil, st.Err()
 	}
 
+	// Check user ID doesn't already exist
+	for _, u := range b.users {
+		if u.GetID() == user.GetID() {
+			return nil, status.Error(codes.FailedPrecondition, "user already exists")
+		}
+	}
+
 	if user.GetCreateDate() == nil {
 		now := time.Now()
 		user.CreateDate = &now
@@ -88,7 +95,6 @@ func (b *Backend) ListUsers(_ *types.Empty, srv pbExample.UserService_ListUsersS
 }
 
 func (b *Backend) ListUsersByRole(req *pbExample.UserRole, srv pbExample.UserService_ListUsersByRoleServer) error {
-
 	b.mu.RLock()
 	defer b.mu.RUnlock()
 
