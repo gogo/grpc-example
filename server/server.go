@@ -2,10 +2,13 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"time"
 
+	"github.com/fatih/structs"
 	"github.com/gogo/googleapis/google/rpc"
+	"github.com/gogo/protobuf/protoc-gen-gogo/generator"
 	"github.com/gogo/protobuf/types"
 	"github.com/gogo/status"
 	"google.golang.org/grpc/codes"
@@ -108,4 +111,52 @@ func (b *Backend) ListUsersByRole(req *pbExample.UserRole, srv pbExample.UserSer
 	}
 
 	return nil
+}
+
+func (b *Backend) UpdateUser(ctx context.Context, req *pbExample.UpdateUserRequest) (*pbExample.User, error) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+
+	var user *pbExample.User
+	for _, u := range b.users {
+		if u.GetID() == req.GetUser().GetID() {
+			user = u
+		}
+	}
+
+	if user == nil {
+		return nil, status.Error(codes.NotFound, "user was not found")
+	}
+
+	st := structs.New(user)
+	for _, path := range req.GetUpdateMask().GetPaths() {
+		if path == "id" {
+			return nil, status.Error(codes.InvalidArgument, "cannot update id field")
+		}
+		// This doesn't translate properly if a CustomName setting is used,
+		// but none of the fields except ID has that set, so NO WORRIES.
+		fname := generator.CamelCase(path)
+		field, ok := st.FieldOk(fname)
+		if !ok {
+			st := status.New(codes.InvalidArgument, "invalid field specified")
+			st, err := st.WithDetails(&rpc.BadRequest{
+				FieldViolations: []*rpc.BadRequest_FieldViolation{{
+					Field:       "update_mask",
+					Description: fmt.Sprintf("The user message type does not have a field called %q", path),
+				}},
+			})
+			if err != nil {
+				panic(err)
+			}
+			return nil, st.Err()
+		}
+
+		in := structs.New(req.GetUser())
+		err := field.Set(in.Field(fname).Value())
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return user, nil
 }

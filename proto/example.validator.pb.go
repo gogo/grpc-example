@@ -15,6 +15,7 @@ It is generated from these files:
 It has these top-level messages:
 	User
 	UserRole
+	UpdateUserRequest
 */
 package example
 
@@ -23,6 +24,7 @@ import go_proto_validators "github.com/mwitkow/go-proto-validators"
 import proto "github.com/gogo/protobuf/proto"
 import golang_proto "github.com/golang/protobuf/proto"
 import math "math"
+import _ "github.com/gogo/protobuf/types"
 import _ "github.com/gogo/protobuf/types"
 import _ "github.com/gogo/protobuf/types"
 import _ "github.com/gogo/googleapis/google/api"
@@ -51,5 +53,18 @@ func (this *User) Validate() error {
 	return nil
 }
 func (this *UserRole) Validate() error {
+	return nil
+}
+func (this *UpdateUserRequest) Validate() error {
+	if this.User != nil {
+		if err := go_proto_validators.CallValidatorIfExists(this.User); err != nil {
+			return go_proto_validators.FieldError("User", err)
+		}
+	}
+	if this.UpdateMask != nil {
+		if err := go_proto_validators.CallValidatorIfExists(this.UpdateMask); err != nil {
+			return go_proto_validators.FieldError("UpdateMask", err)
+		}
+	}
 	return nil
 }
