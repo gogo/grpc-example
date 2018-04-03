@@ -37,10 +37,6 @@ required = [
   name = "github.com/gogo/protobuf"
 
 [[constraint]]
-  name = "github.com/gogo/status"
-  version = "1.0.1"
-
-[[constraint]]
   branch = "master"
   name = "github.com/grpc-ecosystem/grpc-gateway"
 
