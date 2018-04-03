@@ -20,7 +20,7 @@
     "google/api",
     "google/rpc"
   ]
-  revision = "0cd9801be74a10d5ac39d69626eac8255ffcd502"
+  revision = "08a7655d27152912db7aaf4f983275eaf8d128ef"
 
 [[projects]]
   branch = "master"
@@ -56,12 +56,6 @@
     "vanity/command"
   ]
   revision = "1ef32a8b9fc3f8ec940126907cedb5998f6318e4"
-
-[[projects]]
-  name = "github.com/gogo/status"
-  packages = ["."]
-  revision = "f3652e1570e19992699cce3362408e20682effdf"
-  version = "v1.0.1"
 
 [[projects]]
   branch = "master"
@@ -216,6 +210,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "29b58d190070578af16de496872b158233403d37aca20da6eab3735dc197408c"
+  inputs-digest = "bd4e6ea46f7e0702e0874065abdb95edbaf7716ff5b40a15380c0460465dfbfa"
   solver-name = "gps-cdcl"
   solver-version = 1
