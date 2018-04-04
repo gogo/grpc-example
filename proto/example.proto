@@ -35,6 +35,8 @@ option (gogoproto.unmarshaler_all) = true;
 option (gogoproto.sizer_all) = true;
 // Enable registration with golang/protobuf for the grpc-gateway.
 option (gogoproto.goproto_registration) = true;
+// Enable generation of XXX_MessageName methods for grpc-go/status.
+option (gogoproto.messagename_all) = true;
 
 service UserService {
     rpc AddUser(User) returns (google.protobuf.Empty) {
