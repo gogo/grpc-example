@@ -207,10 +207,8 @@ var (
 	var protoReq {{.Method.RequestType.GoType .Method.Service.File.GoPkg.Path}}
 	var metadata runtime.ServerMetadata
 {{if .Body}}
-	if req.ContentLength > 0 {
-		if err := marshaler.NewDecoder(req.Body).Decode(&{{.Body.RHS "protoReq"}}); err != nil {
-			return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-		}
+	if err := marshaler.NewDecoder(req.Body).Decode(&{{.Body.AssignableExpr "protoReq"}}); err != nil && err != io.EOF  {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 {{end}}
 {{if .PathParams}}
@@ -228,7 +226,7 @@ var (
 {{if $param.IsNestedProto3 }}
 	err = runtime.PopulateFieldFromPath(&protoReq, {{$param | printf "%q"}}, val)
 {{else}}
-	{{$param.RHS "protoReq"}}, err = {{$param.ConvertFuncExpr}}(val)
+	{{$param.AssignableExpr "protoReq"}}, err = {{$param.ConvertFuncExpr}}(val)
 {{end}}
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", {{$param | printf "%q"}}, err)
@@ -268,7 +266,7 @@ var (
 	dec := marshaler.NewDecoder(req.Body)
 	handleSend := func() error {
 		var protoReq {{.Method.RequestType.GoType .Method.Service.File.GoPkg.Path}}
-		err = dec.Decode(&protoReq)
+		err := dec.Decode(&protoReq)
 		if err == io.EOF {
 			return err
 		}
@@ -276,7 +274,7 @@ var (
 			grpclog.Printf("Failed to decode request: %v", err)
 			return err
 		}
-		if err = stream.Send(&protoReq); err != nil {
+		if err := stream.Send(&protoReq); err != nil {
 			grpclog.Printf("Failed to send request: %v", err)
 			return err
 		}
