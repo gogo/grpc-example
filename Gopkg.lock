@@ -8,6 +8,12 @@
   version = "v1.0"
 
 [[projects]]
+  name = "github.com/ghodss/yaml"
+  packages = ["."]
+  revision = "0ca9ea5df5451ffdf184b4428c902747c2c11cd7"
+  version = "v1.0.0"
+
+[[projects]]
   branch = "master"
   name = "github.com/gogo/gateway"
   packages = ["."]
@@ -20,7 +26,7 @@
     "google/api",
     "google/rpc"
   ]
-  revision = "08a7655d27152912db7aaf4f983275eaf8d128ef"
+  revision = "b23578765ee54ff6bceff57f397d833bf4ca6869"
 
 [[projects]]
   branch = "master"
@@ -55,7 +61,7 @@
     "vanity",
     "vanity/command"
   ]
-  revision = "1ef32a8b9fc3f8ec940126907cedb5998f6318e4"
+  revision = "30cf7ac33676b5786e78c746683f0d4cd64fa75b"
 
 [[projects]]
   branch = "master"
@@ -71,7 +77,7 @@
     "mockgen",
     "mockgen/model"
   ]
-  revision = "58cd061d09382b6011f84c1291ebe50ef2e25bab"
+  revision = "22bbf0ddf08105dfa364d0a2fa619dfa71014af5"
 
 [[projects]]
   name = "github.com/golang/protobuf"
@@ -80,6 +86,7 @@
     "proto",
     "protoc-gen-go/descriptor",
     "protoc-gen-go/generator",
+    "protoc-gen-go/generator/internal/remap",
     "protoc-gen-go/plugin",
     "ptypes",
     "ptypes/any",
@@ -87,19 +94,20 @@
     "ptypes/struct",
     "ptypes/timestamp"
   ]
-  revision = "925541529c1fa6821df4e44ce2723319eb2be768"
-  version = "v1.0.0"
+  revision = "b4deda0973fb4c70b50d226b1af49f3da59f5265"
+  version = "v1.1.0"
 
 [[projects]]
-  branch = "master"
   name = "github.com/grpc-ecosystem/go-grpc-middleware"
   packages = ["validator"]
-  revision = "aed189ae50cf2ee326c1de8c083f3187e574e0d8"
+  revision = "c250d6563d4d4c20252cd865923440e829844f4e"
+  version = "v1.0.0"
 
 [[projects]]
   branch = "master"
   name = "github.com/grpc-ecosystem/grpc-gateway"
   packages = [
+    "codegenerator",
     "protoc-gen-grpc-gateway",
     "protoc-gen-grpc-gateway/descriptor",
     "protoc-gen-grpc-gateway/generator",
@@ -112,7 +120,7 @@
     "runtime/internal",
     "utilities"
   ]
-  revision = "58f78b988bc393694cef62b92c5cde77e4742ff5"
+  revision = "a53af079f669b6375dd96cdf5e98e67f886a8b4d"
 
 [[projects]]
   branch = "master"
@@ -122,7 +130,7 @@
     "plugin",
     "protoc-gen-govalidators"
   ]
-  revision = "a55ca57f374a8846924b030f534d8b8211508cf0"
+  revision = "0950a79900071e9f3f5979b78078c599376422fd"
 
 [[projects]]
   name = "github.com/rakyll/statik"
@@ -138,14 +146,14 @@
   name = "golang.org/x/net"
   packages = [
     "context",
+    "http/httpguts",
     "http2",
     "http2/hpack",
     "idna",
     "internal/timeseries",
-    "lex/httplex",
     "trace"
   ]
-  revision = "6078986fec03a1dcc236c34816c71b0e05018fda"
+  revision = "2491c5de3490fced2f6cff376127c667efeed857"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -175,7 +183,7 @@
     "googleapis/api/annotations",
     "googleapis/rpc/status"
   ]
-  revision = "ab0870e398d5dd054b868c0db1481ab029b9a9f2"
+  revision = "7bb2a897381c9c5ab2aeb8614f758d7766af68ff"
 
 [[projects]]
   name = "google.golang.org/grpc"
@@ -184,6 +192,7 @@
     "balancer",
     "balancer/base",
     "balancer/roundrobin",
+    "channelz",
     "codes",
     "connectivity",
     "credentials",
@@ -204,12 +213,18 @@
     "tap",
     "transport"
   ]
-  revision = "afc05b9e1d36f289ea16ba294894486a3e458246"
-  version = "v1.11.0"
+  revision = "41344da2231b913fa3d983840a57a6b1b7b631a1"
+  version = "v1.12.0"
+
+[[projects]]
+  name = "gopkg.in/yaml.v2"
+  packages = ["."]
+  revision = "5420a8b6744d3b0345ab293f6fcba19c978f1183"
+  version = "v2.2.1"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "bd4e6ea46f7e0702e0874065abdb95edbaf7716ff5b40a15380c0460465dfbfa"
+  inputs-digest = "fcaa8d639d6b3e63da7253fedacbc01ae3efa39443e221121debac1f6fb685cb"
   solver-name = "gps-cdcl"
   solver-version = 1
