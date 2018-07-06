@@ -9,6 +9,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/gogo/gateway"
 	"github.com/grpc-ecosystem/go-grpc-middleware/validator"
@@ -26,6 +27,7 @@ import (
 )
 
 var (
+	isClient    = flag.Bool("client", false, "Run as client")
 	gRPCPort    = flag.Int("grpc-port", 10000, "The gRPC server port")
 	gatewayPort = flag.Int("gateway-port", 11000, "The gRPC-Gateway server port")
 )
@@ -56,6 +58,10 @@ func serveOpenAPI(mux *http.ServeMux) error {
 
 func main() {
 	flag.Parse()
+	if *isClient {
+		runClient()
+		return
+	}
 	addr := fmt.Sprintf("localhost:%d", *gRPCPort)
 	lis, err := net.Listen("tcp", addr)
 	if err != nil {
@@ -122,4 +128,44 @@ func main() {
 		Handler: mux,
 	}
 	log.Fatalln(gwServer.ListenAndServeTLS("", ""))
+}
+
+func runClient() {
+	addr := fmt.Sprintf("localhost:%d", *gRPCPort)
+	// Set up a connection to the server.
+	conn, err := grpc.Dial(addr,
+		grpc.WithTransportCredentials(credentials.NewClientTLSFromCert(insecure.CertPool, "")),
+	)
+	if err != nil {
+		log.Fatalf("did not connect: %v", err)
+	}
+	defer conn.Close()
+	c := pbExample.NewUserServiceClient(conn)
+
+	{
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+
+		user := pbExample.User{ID: 42, Role: pbExample.Role_ADMIN}
+		_, err = c.AddUser(ctx, &user)
+		if err != nil {
+			log.Fatalf("could not create user: %v", err)
+		}
+		log.Infof("created user %+v", user)
+	}
+
+	{
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+
+		r, err := c.ListUsers(ctx, nil)
+		if err != nil {
+			log.Fatalf("could not list users: %v", err)
+		}
+		rcv, err := r.Recv()
+		if err != nil {
+			log.Fatalf("received error: %v", err)
+		}
+		log.Infof("list users: %+v", rcv)
+	}
 }

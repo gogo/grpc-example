@@ -30,6 +30,35 @@ INFO: Serving OpenAPI Documentation on https://localhost:11000/openapi-ui/
 After starting the server, you can access the OpenAPI UI on
 [https://localhost:11000/openapi-ui/](https://localhost:11000/openapi-ui/)
 
+The same executable can be used as a client, which executes `addUser` and `listUsers` via gRPC:
+
+```bash
+$ grpc-example --client
+INFO: 2018/07/06 00:04:55 parsed scheme: ""
+INFO: 2018/07/06 00:04:55 scheme "" not registered, fallback to default scheme
+INFO: 2018/07/06 00:04:55 ccResolverWrapper: sending new addresses to cc: [{localhost:10000 0  <nil>}]
+INFO: 2018/07/06 00:04:55 ClientConn switching balancer to "pick_first"
+INFO: 2018/07/06 00:04:55 pickfirstBalancer: HandleSubConnStateChange: 0xc4201c0060, CONNECTING
+INFO: 2018/07/06 00:04:55 blockingPicker: the picked transport is not ready, loop back to repick
+INFO: 2018/07/06 00:04:55 pickfirstBalancer: HandleSubConnStateChange: 0xc4201c0060, READY
+INFO: 2018/07/06 00:04:55 created user {ID:42 Role:ADMIN CreateDate:<nil>}
+INFO: 2018/07/06 00:04:55 list users: id:42 role:ADMIN create_date:<seconds:1530849895 nanos:104015226 >
+```
+
+After a user has been added, list it via REST API:
+
+```bash
+$ curl -k -X GET "https://localhost:11000/api/v1/users" -H "accept: application/json"
+{
+  "result": {
+    "id": 42,
+    "role": "ADMIN",
+    "create_date": "2018-07-06T04:04:55.104015226Z"
+  }
+}
+```
+
+
 ## Development
 
 To regenerate the proto files, ensure you have installed the generate dependencies:
