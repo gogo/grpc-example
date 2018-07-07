@@ -8,6 +8,7 @@ package example;
 
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
 import "google/protobuf/field_mask.proto";
 import "google/api/annotations.proto";
 import "protoc-gen-swagger/options/annotations.proto";
@@ -41,11 +42,11 @@ option (gogoproto.messagename_all) = true;
 service UserService {
     rpc AddUser(User) returns (google.protobuf.Empty) {
         option (google.api.http) = {
-            post: "/api/v1/user"
+            post: "/api/v1/users"
             body: "*"
         };
     }
-    rpc ListUsers(google.protobuf.Empty) returns (stream User) {
+    rpc ListUsers(ListUsersRequest) returns (stream User) {
         option (google.api.http) = {
             get: "/api/v1/users"
         };
@@ -57,7 +58,7 @@ service UserService {
     }
     rpc UpdateUser(UpdateUserRequest) returns (User) {
         option (google.api.http) = {
-            patch: "/api/v1/user/{user.id}"
+            patch: "/api/v1/users/{user.id}"
             body: "user"
         };
     }
@@ -94,4 +95,15 @@ message UpdateUserRequest {
     // The update mask applies to the resource. For the `FieldMask` definition,
     // see https://developers.google.com/protocol-buffers/docs/reference/google.protobuf#fieldmask
     google.protobuf.FieldMask update_mask = 2;
+}
+
+message ListUsersRequest {
+    // Only list users created after this timestamp
+    google.protobuf.Timestamp created_since = 1 [
+        (gogoproto.stdtime) = true
+    ];
+    // Only list users older than this Duration
+    google.protobuf.Duration older_than = 2 [
+        (gogoproto.stdduration) = true
+    ];
 }

@@ -16,6 +16,7 @@ It has these top-level messages:
 	User
 	UserRole
 	UpdateUserRequest
+	ListUsersRequest
 */
 package example
 
@@ -24,6 +25,7 @@ import go_proto_validators "github.com/mwitkow/go-proto-validators"
 import proto "github.com/gogo/protobuf/proto"
 import golang_proto "github.com/golang/protobuf/proto"
 import math "math"
+import _ "github.com/gogo/protobuf/types"
 import _ "github.com/gogo/protobuf/types"
 import _ "github.com/gogo/protobuf/types"
 import _ "github.com/gogo/protobuf/types"
@@ -64,6 +66,19 @@ func (this *UpdateUserRequest) Validate() error {
 	if this.UpdateMask != nil {
 		if err := go_proto_validators.CallValidatorIfExists(this.UpdateMask); err != nil {
 			return go_proto_validators.FieldError("UpdateMask", err)
+		}
+	}
+	return nil
+}
+func (this *ListUsersRequest) Validate() error {
+	if this.CreatedSince != nil {
+		if err := go_proto_validators.CallValidatorIfExists(this.CreatedSince); err != nil {
+			return go_proto_validators.FieldError("CreatedSince", err)
+		}
+	}
+	if this.OlderThan != nil {
+		if err := go_proto_validators.CallValidatorIfExists(this.OlderThan); err != nil {
+			return go_proto_validators.FieldError("OlderThan", err)
 		}
 	}
 	return nil
