@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"mime"
 	"net"
 	"net/http"
@@ -21,6 +22,7 @@ import (
 	"github.com/gogo/grpc-example/insecure"
 	pbExample "github.com/gogo/grpc-example/proto"
 	"github.com/gogo/grpc-example/server"
+
 	// Static files
 	_ "github.com/gogo/grpc-example/statik"
 )
@@ -33,7 +35,7 @@ var (
 var log grpclog.LoggerV2
 
 func init() {
-	log = grpclog.NewLoggerV2(os.Stdout, os.Stderr, os.Stderr)
+	log = grpclog.NewLoggerV2(os.Stdout, ioutil.Discard, ioutil.Discard)
 	grpclog.SetLoggerV2(log)
 }
 
