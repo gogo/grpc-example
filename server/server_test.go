@@ -20,16 +20,18 @@ import (
 
 func TestAddUserListUsers(t *testing.T) {
 	b := server.New()
-	cd := time.Date(2000, 0, 0, 0, 0, 0, 1, time.UTC)
+	cd1 := time.Date(2000, 0, 0, 0, 0, 0, 1, time.UTC)
+	cd2 := time.Date(2000, 0, 0, 0, 0, 0, 3, time.UTC)
+	beforeCD2 := time.Date(2000, 0, 0, 0, 0, 0, 2, time.UTC)
 	u1 := &pbExample.User{
 		ID:         1,
 		Role:       pbExample.Role_ADMIN,
-		CreateDate: &cd,
+		CreateDate: &cd1,
 	}
 	u2 := &pbExample.User{
 		ID:         2,
 		Role:       pbExample.Role_GUEST,
-		CreateDate: &cd,
+		CreateDate: &cd2,
 	}
 	_, err := b.AddUser(context.Background(), u1)
 	if err != nil {
@@ -42,10 +44,11 @@ func TestAddUserListUsers(t *testing.T) {
 
 	ctrl := gomock.NewController(t)
 	mockServer := NewMockUserService_ListUsersServer(ctrl)
-	mockServer.EXPECT().Send(u1).Return(nil)
 	mockServer.EXPECT().Send(u2).Return(nil)
 
-	err = b.ListUsers(nil, mockServer)
+	err = b.ListUsers(&pbExample.ListUsersRequest{
+		CreatedSince: &beforeCD2,
+	}, mockServer)
 	if err != nil {
 		t.Fatal("Failed to list users: ", err)
 	}

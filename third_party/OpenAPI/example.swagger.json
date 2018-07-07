@@ -15,7 +15,38 @@
     "application/json"
   ],
   "paths": {
-    "/api/v1/user": {
+    "/api/v1/users": {
+      "get": {
+        "operationId": "ListUsers",
+        "responses": {
+          "200": {
+            "description": "(streaming responses)",
+            "schema": {
+              "$ref": "#/definitions/exampleUser"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "created_since",
+            "description": "Only list users created after this timestamp.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "older_than",
+            "description": "Only list users older than this Duration.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "UserService"
+        ]
+      },
       "post": {
         "operationId": "AddUser",
         "responses": {
@@ -36,55 +67,6 @@
             }
           }
         ],
-        "tags": [
-          "UserService"
-        ]
-      }
-    },
-    "/api/v1/user/{user.id}": {
-      "patch": {
-        "operationId": "UpdateUser",
-        "responses": {
-          "200": {
-            "description": "",
-            "schema": {
-              "$ref": "#/definitions/exampleUser"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "user.id",
-            "in": "path",
-            "required": true,
-            "type": "integer",
-            "format": "int64"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/exampleUser"
-            }
-          }
-        ],
-        "tags": [
-          "UserService"
-        ]
-      }
-    },
-    "/api/v1/users": {
-      "get": {
-        "operationId": "ListUsers",
-        "responses": {
-          "200": {
-            "description": "(streaming responses)",
-            "schema": {
-              "$ref": "#/definitions/exampleUser"
-            }
-          }
-        },
         "tags": [
           "UserService"
         ]
@@ -113,6 +95,40 @@
               "ADMIN"
             ],
             "default": "GUEST"
+          }
+        ],
+        "tags": [
+          "UserService"
+        ]
+      }
+    },
+    "/api/v1/users/{user.id}": {
+      "patch": {
+        "operationId": "UpdateUser",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/exampleUser"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "user.id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "name": "body",
+            "description": "The user resource which replaces the resource on the server.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/exampleUser"
+            }
           }
         ],
         "tags": [

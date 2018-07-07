@@ -66,7 +66,7 @@ func (b *Backend) AddUser(ctx context.Context, user *pbExample.User) (*types.Emp
 	return nil, nil
 }
 
-func (b *Backend) ListUsers(_ *types.Empty, srv pbExample.UserService_ListUsersServer) error {
+func (b *Backend) ListUsers(req *pbExample.ListUsersRequest, srv pbExample.UserService_ListUsersServer) error {
 	b.mu.RLock()
 	defer b.mu.RUnlock()
 
@@ -88,6 +88,12 @@ func (b *Backend) ListUsers(_ *types.Empty, srv pbExample.UserService_ListUsersS
 	}
 
 	for _, user := range b.users {
+		switch {
+		case req.GetCreatedSince() != nil && user.GetCreateDate().Before(*req.GetCreatedSince()):
+			continue
+		case req.GetOlderThan() != nil && time.Since(*user.GetCreateDate()) <= *req.GetOlderThan():
+			continue
+		}
 		err := srv.Send(user)
 		if err != nil {
 			return err
