@@ -49,7 +49,7 @@ $$GOPATH/src \
 		proto/example.proto
 
 	# Workaround for https://github.com/grpc-ecosystem/grpc-gateway/issues/229.
-	sed -i "s/empty.Empty/types.Empty/g" proto/example.pb.gw.go
+	sed -i.bak "s/empty.Empty/types.Empty/g" proto/example.pb.gw.go && rm proto/example.pb.gw.go.bak
 
 	# Generate static assets for OpenAPI UI
 	statik -m -f -src third_party/OpenAPI/
