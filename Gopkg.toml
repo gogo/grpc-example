@@ -29,24 +29,31 @@ required = [
     non-go = false
 
 [[constraint]]
-  branch = "master"
+  branch = "update-protos"
   name = "github.com/gogo/googleapis"
+  #version = "1.3.0"
 
 [[constraint]]
-  branch = "master"
   name = "github.com/gogo/protobuf"
+  version = "1.2.0"
+
+[[constraint]]
+  name = "github.com/gogo/gateway"
+  branch = "migrate-modules"
+  #version = "1.0.0"
 
 [[constraint]]
   name = "github.com/gogo/status"
-  version = "1.0.3"
+  branch = "migrate-modules"
+  #version = "1.0.3"
 
 [[constraint]]
-  branch = "master"
   name = "github.com/grpc-ecosystem/grpc-gateway"
+  version = "1.8.5"
 
 [[constraint]]
   name = "google.golang.org/grpc"
-  version = "1.12.0"
+  version = "1.19.0"
 
 [[constraint]]
   branch = "master"
@@ -55,3 +62,7 @@ required = [
 [[constraint]]
   branch = "master"
   name = "github.com/golang/mock"
+
+[[constraint]]
+  branch = "master"
+  name = "google.golang.org/genproto"

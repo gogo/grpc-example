@@ -46,6 +46,32 @@ type Registry struct {
 
 	// mergeFileName target swagger file name after merge
 	mergeFileName string
+
+	// allowRepeatedFieldsInBody permits repeated field in body field path of `google.api.http` annotation option
+	allowRepeatedFieldsInBody bool
+
+	// includePackageInTags controls whether the package name defined in the `package` directive
+	// in the proto file can be prepended to the gRPC service name in the `Tags` field of every operation.
+	includePackageInTags bool
+
+	// repeatedPathParamSeparator specifies how path parameter repeated fields are separated
+	repeatedPathParamSeparator repeatedFieldSeparator
+
+	// useJSONNamesForFields if true json tag name is used for generating fields in swagger definitions,
+	// otherwise the original proto name is used. It's helpful for synchronizing the swagger definition
+	// with grpc-gateway response, if it uses json tags for marshaling.
+	useJSONNamesForFields bool
+
+	// useFQNForSwaggerName if true swagger names will use the full qualified name (FQN) from proto definition,
+	// and generate a dot-separated swagger name concatenating all elements from the proto FQN.
+	// If false, the default behavior is to concat the last 2 elements of the FQN if they are unique, otherwise concat
+	// all the elements of the FQN without any separator
+	useFQNForSwaggerName bool
+}
+
+type repeatedFieldSeparator struct {
+	name string
+	sep  rune
 }
 
 // NewRegistry returns a new Registry.
@@ -57,6 +83,10 @@ func NewRegistry() *Registry {
 		pkgMap:            make(map[string]string),
 		pkgAliases:        make(map[string]string),
 		externalHTTPRules: make(map[string][]*annotations.HttpRule),
+		repeatedPathParamSeparator: repeatedFieldSeparator{
+			name: "csv",
+			sep:  ',',
+		},
 	}
 }
 
@@ -316,6 +346,85 @@ func (r *Registry) IsAllowMerge() bool {
 // SetMergeFileName controls the target swagger file name out of multiple protos
 func (r *Registry) SetMergeFileName(mergeFileName string) {
 	r.mergeFileName = mergeFileName
+}
+
+// SetAllowRepeatedFieldsInBody controls whether repeated field can be used
+// in `body` and `response_body` (`google.api.http` annotation option) field path or not
+func (r *Registry) SetAllowRepeatedFieldsInBody(allow bool) {
+	r.allowRepeatedFieldsInBody = allow
+}
+
+// IsAllowRepeatedFieldsInBody checks if repeated field can be used
+// in `body` and `response_body` (`google.api.http` annotation option) field path or not
+func (r *Registry) IsAllowRepeatedFieldsInBody() bool {
+	return r.allowRepeatedFieldsInBody
+}
+
+// SetIncludePackageInTags controls whether the package name defined in the `package` directive
+// in the proto file can be prepended to the gRPC service name in the `Tags` field of every operation.
+func (r *Registry) SetIncludePackageInTags(allow bool) {
+	r.includePackageInTags = allow
+}
+
+// IsIncludePackageInTags checks whether the package name defined in the `package` directive
+// in the proto file can be prepended to the gRPC service name in the `Tags` field of every operation.
+func (r *Registry) IsIncludePackageInTags() bool {
+	return r.includePackageInTags
+}
+
+// GetRepeatedPathParamSeparator returns a rune spcifying how
+// path parameter repeated fields are separated.
+func (r *Registry) GetRepeatedPathParamSeparator() rune {
+	return r.repeatedPathParamSeparator.sep
+}
+
+// GetRepeatedPathParamSeparatorName returns the name path parameter repeated
+// fields repeatedFieldSeparator. I.e. 'csv', 'pipe', 'ssv' or 'tsv'
+func (r *Registry) GetRepeatedPathParamSeparatorName() string {
+	return r.repeatedPathParamSeparator.name
+}
+
+// SetRepeatedPathParamSeparator sets how path parameter repeated fields are
+// separated. Allowed names are 'csv', 'pipe', 'ssv' and 'tsv'.
+func (r *Registry) SetRepeatedPathParamSeparator(name string) error {
+	var sep rune
+	switch name {
+	case "csv":
+		sep = ','
+	case "pipes":
+		sep = '|'
+	case "ssv":
+		sep = ' '
+	case "tsv":
+		sep = '\t'
+	default:
+		return fmt.Errorf("unknown repeated path parameter separator: %s", name)
+	}
+	r.repeatedPathParamSeparator = repeatedFieldSeparator{
+		name: name,
+		sep:  sep,
+	}
+	return nil
+}
+
+// SetUseJSONNamesForFields sets useJSONNamesForFields
+func (r *Registry) SetUseJSONNamesForFields(use bool) {
+	r.useJSONNamesForFields = use
+}
+
+// GetUseJSONNamesForFields returns useJSONNamesForFields
+func (r *Registry) GetUseJSONNamesForFields() bool {
+	return r.useJSONNamesForFields
+}
+
+// SetUseFQNForSwaggerName sets useFQNForSwaggerName
+func (r *Registry) SetUseFQNForSwaggerName(use bool) {
+	r.useFQNForSwaggerName = use
+}
+
+// GetUseFQNForSwaggerName returns useFQNForSwaggerName
+func (r *Registry) GetUseFQNForSwaggerName() bool {
+	return r.useFQNForSwaggerName
 }
 
 // GetMergeFileName return the target merge swagger file name

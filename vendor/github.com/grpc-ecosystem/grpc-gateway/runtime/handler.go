@@ -9,7 +9,7 @@ import (
 	"context"
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes/any"
-	"github.com/grpc-ecosystem/grpc-gateway/runtime/internal"
+	"github.com/grpc-ecosystem/grpc-gateway/internal"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/grpclog"
 	"google.golang.org/grpc/status"
@@ -106,6 +106,12 @@ func handleForwardResponseTrailer(w http.ResponseWriter, md ServerMetadata) {
 	}
 }
 
+// responseBody interface contains method for getting field for marshaling to the response body
+// this method is generated for response struct from the value of `response_body` in the `google.api.HttpRule`
+type responseBody interface {
+	XXX_ResponseBody() interface{}
+}
+
 // ForwardResponseMessage forwards the message "resp" from gRPC server to REST client.
 func ForwardResponseMessage(ctx context.Context, mux *ServeMux, marshaler Marshaler, w http.ResponseWriter, req *http.Request, resp proto.Message, opts ...func(context.Context, http.ResponseWriter, proto.Message) error) {
 	md, ok := ServerMetadataFromContext(ctx)
@@ -115,13 +121,27 @@ func ForwardResponseMessage(ctx context.Context, mux *ServeMux, marshaler Marsha
 
 	handleForwardResponseServerMetadata(w, mux, md)
 	handleForwardResponseTrailerHeader(w, md)
-	w.Header().Set("Content-Type", marshaler.ContentType())
+
+	contentType := marshaler.ContentType()
+	// Check marshaler on run time in order to keep backwards compatability
+	// An interface param needs to be added to the ContentType() function on 
+	// the Marshal interface to be able to remove this check
+	if httpBodyMarshaler, ok := marshaler.(*HTTPBodyMarshaler); ok {
+		contentType = httpBodyMarshaler.ContentTypeFromMessage(resp)
+	}
+	w.Header().Set("Content-Type", contentType)
+
 	if err := handleForwardResponseOptions(ctx, w, resp, opts); err != nil {
 		HTTPError(ctx, mux, marshaler, w, req, err)
 		return
 	}
-
-	buf, err := marshaler.Marshal(resp)
+	var buf []byte
+	var err error
+	if rb, ok := resp.(responseBody); ok {
+		buf, err = marshaler.Marshal(rb.XXX_ResponseBody())
+	} else {
+		buf, err = marshaler.Marshal(resp)
+	}
 	if err != nil {
 		grpclog.Infof("Marshal error: %v", err)
 		HTTPError(ctx, mux, marshaler, w, req, err)

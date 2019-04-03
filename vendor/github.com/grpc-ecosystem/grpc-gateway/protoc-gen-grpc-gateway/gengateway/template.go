@@ -7,6 +7,7 @@ import (
 	"text/template"
 
 	"github.com/golang/glog"
+	generator2 "github.com/golang/protobuf/protoc-gen-go/generator"
 	"github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway/descriptor"
 	"github.com/grpc-ecosystem/grpc-gateway/utilities"
 )
@@ -16,10 +17,21 @@ type param struct {
 	Imports            []descriptor.GoPackage
 	UseRequestContext  bool
 	RegisterFuncSuffix string
+	AllowPatchFeature  bool
 }
 
 type binding struct {
 	*descriptor.Binding
+	Registry          *descriptor.Registry
+	AllowPatchFeature bool
+}
+
+// GetBodyFieldPath returns the binding body's fieldpath.
+func (b binding) GetBodyFieldPath() string {
+	if b.Body != nil && len(b.Body.FieldPath) != 0 {
+		return b.Body.FieldPath.String()
+	}
+	return "*"
 }
 
 // HasQueryParam determines if the binding needs parameters in query string.
@@ -54,6 +66,58 @@ func (b binding) QueryParamFilter() queryParamFilter {
 	return queryParamFilter{utilities.NewDoubleArray(seqs)}
 }
 
+// HasEnumPathParam returns true if the path parameter slice contains a parameter
+// that maps to an enum proto field that is not repeated, if not false is returned.
+func (b binding) HasEnumPathParam() bool {
+	return b.hasEnumPathParam(false)
+}
+
+// HasRepeatedEnumPathParam returns true if the path parameter slice contains a parameter
+// that maps to a repeated enum proto field, if not false is returned.
+func (b binding) HasRepeatedEnumPathParam() bool {
+	return b.hasEnumPathParam(true)
+}
+
+// hasEnumPathParam returns true if the path parameter slice contains a parameter
+// that maps to a enum proto field and that the enum proto field is or isn't repeated
+// based on the provided 'repeated' parameter.
+func (b binding) hasEnumPathParam(repeated bool) bool {
+	for _, p := range b.PathParams {
+		if p.IsEnum() && p.IsRepeated() == repeated {
+			return true
+		}
+	}
+	return false
+}
+
+// LookupEnum looks up a enum type by path parameter.
+func (b binding) LookupEnum(p descriptor.Parameter) *descriptor.Enum {
+	e, err := b.Registry.LookupEnum("", p.Target.GetTypeName())
+	if err != nil {
+		return nil
+	}
+	return e
+}
+
+// FieldMaskField returns the golang-style name of the variable for a FieldMask, if there is exactly one of that type in
+// the message. Otherwise, it returns an empty string.
+func (b binding) FieldMaskField() string {
+	var fieldMaskField *descriptor.Field
+	for _, f := range b.Method.RequestType.Fields {
+		if f.GetTypeName() == ".google.protobuf.FieldMask" {
+			// if there is more than 1 FieldMask for this request, then return none
+			if fieldMaskField != nil {
+				return ""
+			}
+			fieldMaskField = f
+		}
+	}
+	if fieldMaskField != nil {
+		return generator2.CamelCase(fieldMaskField.GetName())
+	}
+	return ""
+}
+
 // queryParamFilter is a wrapper of utilities.DoubleArray which provides String() to output DoubleArray.Encoding in a stable and predictable format.
 type queryParamFilter struct {
 	*utilities.DoubleArray
@@ -74,23 +138,32 @@ type trailerParams struct {
 	RegisterFuncSuffix string
 }
 
-func applyTemplate(p param) (string, error) {
+func applyTemplate(p param, reg *descriptor.Registry) (string, error) {
 	w := bytes.NewBuffer(nil)
 	if err := headerTemplate.Execute(w, p); err != nil {
 		return "", err
 	}
 	var targetServices []*descriptor.Service
+
+	for _, msg := range p.Messages {
+		msgName := generator2.CamelCase(*msg.Name)
+		msg.Name = &msgName
+	}
 	for _, svc := range p.Services {
 		var methodWithBindingsSeen bool
-		svcName := strings.Title(*svc.Name)
+		svcName := generator2.CamelCase(*svc.Name)
 		svc.Name = &svcName
 		for _, meth := range svc.Methods {
 			glog.V(2).Infof("Processing %s.%s", svc.GetName(), meth.GetName())
-			methName := strings.Title(*meth.Name)
+			methName := generator2.CamelCase(*meth.Name)
 			meth.Name = &methName
 			for _, b := range meth.Bindings {
 				methodWithBindingsSeen = true
-				if err := handlerTemplate.Execute(w, binding{Binding: b}); err != nil {
+				if err := handlerTemplate.Execute(w, binding{
+					Binding:           b,
+					Registry:          reg,
+					AllowPatchFeature: p.AllowPatchFeature,
+				}); err != nil {
 					return "", err
 				}
 			}
@@ -201,6 +274,7 @@ func request_{{.Method.Service.GetName}}_{{.Method.GetName}}_{{.Index}}(ctx cont
 `))
 
 	_ = template.Must(handlerTemplate.New("client-rpc-request-func").Parse(`
+{{$AllowPatchFeature := .AllowPatchFeature}}
 {{if .HasQueryParam}}
 var (
 	filter_{{.Method.Service.GetName}}_{{.Method.GetName}}_{{.Index}} = {{.QueryParamFilter}}
@@ -210,30 +284,64 @@ var (
 	var protoReq {{.Method.RequestType.GoType .Method.Service.File.GoPkg.Path}}
 	var metadata runtime.ServerMetadata
 {{if .Body}}
-	if err := marshaler.NewDecoder(req.Body).Decode(&{{.Body.AssignableExpr "protoReq"}}); err != nil && err != io.EOF  {
+	newReader, berr := utilities.IOReaderFactory(req.Body)
+	if berr != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
+	}
+	if err := marshaler.NewDecoder(newReader()).Decode(&{{.Body.AssignableExpr "protoReq"}}); err != nil && err != io.EOF  {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
+	{{- if and $AllowPatchFeature (and (eq (.HTTPMethod) "PATCH") (.FieldMaskField))}}
+	if protoReq.{{.FieldMaskField}} != nil && len(protoReq.{{.FieldMaskField}}.GetPaths()) > 0 {
+		runtime.CamelCaseFieldMask(protoReq.{{.FieldMaskField}})
+	} {{if not (eq "*" .GetBodyFieldPath)}} else {
+			if fieldMask, err := runtime.FieldMaskFromRequestBody(newReader()); err != nil {
+				return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+			} else {
+				protoReq.{{.FieldMaskField}} = fieldMask
+			}
+	} {{end}}
+	{{end}}
 {{end}}
 {{if .PathParams}}
 	var (
 		val string
+{{- if .HasEnumPathParam}}
+		e int32
+{{- end}}
+{{- if .HasRepeatedEnumPathParam}}
+		es []int32
+{{- end}}
 		ok bool
 		err error
 		_ = err
 	)
+	{{$binding := .}}
 	{{range $param := .PathParams}}
+	{{$enum := $binding.LookupEnum $param}}
 	val, ok = pathParams[{{$param | printf "%q"}}]
 	if !ok {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", {{$param | printf "%q"}})
 	}
-{{if $param.IsNestedProto3 }}
+{{if $param.IsNestedProto3}}
 	err = runtime.PopulateFieldFromPath(&protoReq, {{$param | printf "%q"}}, val)
+{{else if $enum}}
+	e{{if $param.IsRepeated}}s{{end}}, err = {{$param.ConvertFuncExpr}}(val{{if $param.IsRepeated}}, {{$binding.Registry.GetRepeatedPathParamSeparator | printf "%c" | printf "%q"}}{{end}}, {{$enum.GoType $param.Target.Message.File.GoPkg.Path}}_value)
 {{else}}
-	{{$param.AssignableExpr "protoReq"}}, err = {{$param.ConvertFuncExpr}}(val)
+	{{$param.AssignableExpr "protoReq"}}, err = {{$param.ConvertFuncExpr}}(val{{if $param.IsRepeated}}, {{$binding.Registry.GetRepeatedPathParamSeparator | printf "%c" | printf "%q"}}{{end}})
 {{end}}
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", {{$param | printf "%q"}}, err)
 	}
+{{if and $enum $param.IsRepeated}}
+	s := make([]{{$enum.GoType $param.Target.Message.File.GoPkg.Path}}, len(es))
+	for i, v := range es {
+		s[i] = {{$enum.GoType $param.Target.Message.File.GoPkg.Path}}(v)
+	}
+	{{$param.AssignableExpr "protoReq"}} = s
+{{else if $enum}}
+	{{$param.AssignableExpr "protoReq"}} = {{$enum.GoType $param.Target.Message.File.GoPkg.Path}}(e)
+{{end}}
 	{{end}}
 {{end}}
 {{if .HasQueryParam}}
@@ -361,15 +469,6 @@ func Register{{$svc.GetName}}{{$.RegisterFuncSuffix}}Client(ctx context.Context,
 		ctx, cancel := context.WithCancel(ctx)
 	{{- end }}
 		defer cancel()
-		if cn, ok := w.(http.CloseNotifier); ok {
-			go func(done <-chan struct{}, closed <-chan bool) {
-				select {
-				case <-done:
-				case <-closed:
-					cancel()
-				}
-			}(ctx.Done(), cn.CloseNotify())
-		}
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateContext(ctx, mux, req)
 		if err != nil {
@@ -385,13 +484,32 @@ func Register{{$svc.GetName}}{{$.RegisterFuncSuffix}}Client(ctx context.Context,
 		{{if $m.GetServerStreaming}}
 		forward_{{$svc.GetName}}_{{$m.GetName}}_{{$b.Index}}(ctx, mux, outboundMarshaler, w, req, func() (proto.Message, error) { return resp.Recv() }, mux.GetForwardResponseOptions()...)
 		{{else}}
+		{{ if $b.ResponseBody }}
+		forward_{{$svc.GetName}}_{{$m.GetName}}_{{$b.Index}}(ctx, mux, outboundMarshaler, w, req, response_{{$svc.GetName}}_{{$m.GetName}}_{{$b.Index}}{resp}, mux.GetForwardResponseOptions()...)
+		{{ else }}
 		forward_{{$svc.GetName}}_{{$m.GetName}}_{{$b.Index}}(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		{{end}}
 		{{end}}
 	})
 	{{end}}
 	{{end}}
 	return nil
 }
+
+{{range $m := $svc.Methods}}
+{{range $b := $m.Bindings}}
+{{if $b.ResponseBody}}
+type response_{{$svc.GetName}}_{{$m.GetName}}_{{$b.Index}} struct {
+	proto.Message
+}
+
+func (m response_{{$svc.GetName}}_{{$m.GetName}}_{{$b.Index}}) XXX_ResponseBody() interface{} {
+	response := m.Message.(*{{$m.ResponseType.GoType $m.Service.File.GoPkg.Path}})
+	return {{$b.ResponseBody.AssignableExpr "response"}}
+}
+{{end}}
+{{end}}
+{{end}}
 
 var (
 	{{range $m := $svc.Methods}}
