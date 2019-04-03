@@ -2,34 +2,42 @@
 
 
 [[projects]]
+  digest = "1:52ec55889de2c93a772ceba253313c12f65444aac61a11182d4d119ef97479e8"
   name = "github.com/fatih/structs"
   packages = ["."]
+  pruneopts = "NUT"
   revision = "a720dfa8df582c51dee1b36feabb906bde1588bd"
   version = "v1.0"
 
 [[projects]]
+  digest = "1:81466b4218bf6adddac2572a30ac733a9255919bc2f470b4827a317bd4ee1756"
   name = "github.com/ghodss/yaml"
   packages = ["."]
+  pruneopts = "NUT"
   revision = "0ca9ea5df5451ffdf184b4428c902747c2c11cd7"
   version = "v1.0.0"
 
 [[projects]]
-  branch = "master"
+  branch = "migrate-modules"
+  digest = "1:13e0093ce22c5a221d689c590c05a4e34810bfe08a9358e009b0569bb37dd547"
   name = "github.com/gogo/gateway"
   packages = ["."]
-  revision = "6d3dfbe4e3b52add3800488f526462e69bce526a"
+  pruneopts = "NUT"
+  revision = "41858871b68169614989adbe47f9a70c1ca30d37"
 
 [[projects]]
-  branch = "master"
+  branch = "update-protos"
+  digest = "1:d2627f44c974bd0e0d54dbd348b340df8502d7e32d265c18c83431046b503dcf"
   name = "github.com/gogo/googleapis"
   packages = [
     "google/api",
-    "google/rpc"
+    "google/rpc",
   ]
-  revision = "b23578765ee54ff6bceff57f397d833bf4ca6869"
+  pruneopts = "UT"
+  revision = "4324f3c148e0826f1388cf37d675ea69e0d1a23b"
 
 [[projects]]
-  branch = "master"
+  digest = "1:2d91858167615bbc9f642045d8f7e38a16b346fcc2523f9dc75b6da4d8b3397c"
   name = "github.com/gogo/protobuf"
   packages = [
     "gogoproto",
@@ -54,40 +62,51 @@
     "protoc-gen-gogo",
     "protoc-gen-gogo/descriptor",
     "protoc-gen-gogo/generator",
+    "protoc-gen-gogo/generator/internal/remap",
     "protoc-gen-gogo/grpc",
     "protoc-gen-gogo/plugin",
     "sortkeys",
     "types",
     "vanity",
-    "vanity/command"
+    "vanity/command",
   ]
-  revision = "30cf7ac33676b5786e78c746683f0d4cd64fa75b"
+  pruneopts = "UT"
+  revision = "ba06b47c162d49f2af050fb4c75bcbc86a159d5c"
+  version = "v1.2.1"
 
 [[projects]]
+  branch = "migrate-modules"
+  digest = "1:93dfbd1ff3309dcd3573c7fec6ae3db24cba9a2373bcf303008ed8e8262b57e0"
   name = "github.com/gogo/status"
   packages = ["."]
-  revision = "d60b5acac426cb52f7e28124c6aaa862d9f339f5"
-  version = "v1.0.3"
+  pruneopts = "NUT"
+  revision = "c5477ca04172fab4863624a6ac9cbba0c03e377a"
 
 [[projects]]
   branch = "master"
+  digest = "1:e2b86e41f3d669fc36b50d31d32d22c8ac656c75aa5ea89717ce7177e134ff2a"
   name = "github.com/golang/glog"
   packages = ["."]
+  pruneopts = "NUT"
   revision = "23def4e6c14b4da8ac2ed8007337bc5eb5007998"
 
 [[projects]]
   branch = "master"
+  digest = "1:6eff44ef4a815f3d993da313ba0ab1b3bfd8f27deddefdb53e86b1c558952153"
   name = "github.com/golang/mock"
   packages = [
     "gomock",
     "mockgen",
-    "mockgen/model"
+    "mockgen/model",
   ]
+  pruneopts = "NUT"
   revision = "22bbf0ddf08105dfa364d0a2fa619dfa71014af5"
 
 [[projects]]
+  digest = "1:c036192e611e0b289f304fc63a6aec57d43f3f73bf8dc81f9c8e0020116db043"
   name = "github.com/golang/protobuf"
   packages = [
+    "descriptor",
     "jsonpb",
     "proto",
     "protoc-gen-go/descriptor",
@@ -98,22 +117,27 @@
     "ptypes/any",
     "ptypes/duration",
     "ptypes/struct",
-    "ptypes/timestamp"
+    "ptypes/timestamp",
+    "ptypes/wrappers",
   ]
+  pruneopts = "NUT"
   revision = "b4deda0973fb4c70b50d226b1af49f3da59f5265"
   version = "v1.1.0"
 
 [[projects]]
+  digest = "1:f07164e6e27e45c873e1e577690ba5645d95fef15ebefe601e0dd408531fd293"
   name = "github.com/grpc-ecosystem/go-grpc-middleware"
   packages = ["validator"]
+  pruneopts = "NUT"
   revision = "c250d6563d4d4c20252cd865923440e829844f4e"
   version = "v1.0.0"
 
 [[projects]]
-  branch = "master"
+  digest = "1:7810b3ca5509a7eb14ade4cd7523357203511ab664ec9a33ed4d780c83b3c4c5"
   name = "github.com/grpc-ecosystem/grpc-gateway"
   packages = [
     "codegenerator",
+    "internal",
     "protoc-gen-grpc-gateway",
     "protoc-gen-grpc-gateway/descriptor",
     "protoc-gen-grpc-gateway/generator",
@@ -123,32 +147,38 @@
     "protoc-gen-swagger/genswagger",
     "protoc-gen-swagger/options",
     "runtime",
-    "runtime/internal",
-    "utilities"
+    "utilities",
   ]
-  revision = "5948c50af05b7b4a4417c40b6768ffedd3b866dd"
+  pruneopts = "UT"
+  revision = "20f268a412e5b342ebfb1a0eef7c3b7bd6c260ea"
+  version = "v1.8.5"
 
 [[projects]]
   branch = "master"
+  digest = "1:e666a3ed0761c08e83da81bce350fc52e454d61e52ef4bb3f867dda77446372a"
   name = "github.com/mwitkow/go-proto-validators"
   packages = [
     ".",
     "plugin",
-    "protoc-gen-govalidators"
+    "protoc-gen-govalidators",
   ]
+  pruneopts = "UT"
   revision = "0950a79900071e9f3f5979b78078c599376422fd"
 
 [[projects]]
+  digest = "1:5d7c02dff880d46874e55f5393a6f968e80bbbb49acff043eb5a73e768dbd7e4"
   name = "github.com/rakyll/statik"
   packages = [
     ".",
-    "fs"
+    "fs",
   ]
+  pruneopts = "NUT"
   revision = "fd36b3595eb2ec8da4b8153b107f7ea08504899d"
   version = "v0.1.1"
 
 [[projects]]
   branch = "master"
+  digest = "1:bd8f647f8a769a150a15ac85907b58303deb05485c7b3205cddb3007e55bdf35"
   name = "golang.org/x/net"
   packages = [
     "context",
@@ -157,11 +187,21 @@
     "http2/hpack",
     "idna",
     "internal/timeseries",
-    "trace"
+    "trace",
   ]
+  pruneopts = "NUT"
   revision = "2491c5de3490fced2f6cff376127c667efeed857"
 
 [[projects]]
+  branch = "master"
+  digest = "1:2ec2bfb782b2fd89618c7b4026dd2925ecbf04cf0d4f25a746b863afddc6260b"
+  name = "golang.org/x/sys"
+  packages = ["unix"]
+  pruneopts = "NUT"
+  revision = "baf5eb976a8cd65845293cd814ea151018552292"
+
+[[projects]]
+  digest = "1:e7071ed636b5422cc51c0e3a6cebc229d6c9fffc528814b519a980641422d619"
   name = "golang.org/x/text"
   packages = [
     "collate",
@@ -177,36 +217,50 @@
     "unicode/bidi",
     "unicode/cldr",
     "unicode/norm",
-    "unicode/rangetable"
+    "unicode/rangetable",
   ]
+  pruneopts = "NUT"
   revision = "f21a4dfb5e38f5895301dc265a8def02365cc3d0"
   version = "v0.3.0"
 
 [[projects]]
   branch = "master"
+  digest = "1:51b95dc2db289865b71364c0da23ca6bcc0b199e0d827c9cfb053b32248b77ad"
   name = "google.golang.org/genproto"
   packages = [
     "googleapis/api/annotations",
-    "googleapis/rpc/status"
+    "googleapis/api/httpbody",
+    "googleapis/rpc/status",
+    "protobuf/field_mask",
   ]
-  revision = "7bb2a897381c9c5ab2aeb8614f758d7766af68ff"
+  pruneopts = "NUT"
+  revision = "f467c93bbac2133ff463e1f93d18d8f9f3f04451"
 
 [[projects]]
+  digest = "1:f9fe1989f8278a0976fadf27490720c7708c056a11ab7a7ad3d282ff26f28e9a"
   name = "google.golang.org/grpc"
   packages = [
     ".",
     "balancer",
     "balancer/base",
     "balancer/roundrobin",
-    "channelz",
+    "binarylog/grpc_binarylog_v1",
     "codes",
     "connectivity",
     "credentials",
+    "credentials/internal",
     "encoding",
     "encoding/proto",
-    "grpclb/grpc_lb_v1/messages",
     "grpclog",
     "internal",
+    "internal/backoff",
+    "internal/binarylog",
+    "internal/channelz",
+    "internal/envconfig",
+    "internal/grpcrand",
+    "internal/grpcsync",
+    "internal/syscall",
+    "internal/transport",
     "keepalive",
     "metadata",
     "naming",
@@ -217,20 +271,52 @@
     "stats",
     "status",
     "tap",
-    "transport"
   ]
-  revision = "41344da2231b913fa3d983840a57a6b1b7b631a1"
-  version = "v1.12.0"
+  pruneopts = "NUT"
+  revision = "3507fb8e1a5ad030303c106fef3a47c9fdad16ad"
+  version = "v1.19.1"
 
 [[projects]]
+  digest = "1:7c95b35057a0ff2e19f707173cc1a947fa43a6eb5c4d300d196ece0334046082"
   name = "gopkg.in/yaml.v2"
   packages = ["."]
+  pruneopts = "NUT"
   revision = "5420a8b6744d3b0345ab293f6fcba19c978f1183"
   version = "v2.2.1"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "297c081541c1f6dde71b7edb4b905cdb9f5af04735d8c3cdfaa2cf8f1dd854cd"
+  input-imports = [
+    "github.com/fatih/structs",
+    "github.com/gogo/gateway",
+    "github.com/gogo/googleapis/google/api",
+    "github.com/gogo/googleapis/google/rpc",
+    "github.com/gogo/protobuf/gogoproto",
+    "github.com/gogo/protobuf/proto",
+    "github.com/gogo/protobuf/protoc-gen-gogo",
+    "github.com/gogo/protobuf/protoc-gen-gogo/generator",
+    "github.com/gogo/protobuf/types",
+    "github.com/gogo/status",
+    "github.com/golang/mock/gomock",
+    "github.com/golang/mock/mockgen",
+    "github.com/golang/protobuf/proto",
+    "github.com/grpc-ecosystem/go-grpc-middleware/validator",
+    "github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway",
+    "github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger",
+    "github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger/options",
+    "github.com/grpc-ecosystem/grpc-gateway/runtime",
+    "github.com/grpc-ecosystem/grpc-gateway/utilities",
+    "github.com/mwitkow/go-proto-validators",
+    "github.com/mwitkow/go-proto-validators/protoc-gen-govalidators",
+    "github.com/rakyll/statik",
+    "github.com/rakyll/statik/fs",
+    "google.golang.org/grpc",
+    "google.golang.org/grpc/codes",
+    "google.golang.org/grpc/credentials",
+    "google.golang.org/grpc/grpclog",
+    "google.golang.org/grpc/metadata",
+    "google.golang.org/grpc/status",
+  ]
   solver-name = "gps-cdcl"
   solver-version = 1

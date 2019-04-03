@@ -89,8 +89,7 @@ message Info {
   string description = 2;
   string terms_of_service = 3;
   Contact contact = 4;
-  // field 5 is reserved for 'license'.
-  reserved 5;
+  License license = 5;
   string version = 6;
 }
 
@@ -103,6 +102,17 @@ message Contact {
   string name = 1;
   string url = 2;
   string email = 3;
+}
+
+// `License` is a representation of OpenAPI v2 specification's License object.
+//
+// See: https://github.com/OAI/OpenAPI-Specification/blob/3.0.0/versions/2.0.md#licenseObject
+//
+message License {
+  // Required. The license name used for the API.
+  string name = 1;
+  // A URL to the license used for the API.
+  string url = 2;
 }
 
 // `ExternalDocumentation` is a representation of OpenAPI v2 specification's
@@ -159,8 +169,7 @@ message JSONSchema {
   string title = 5;
   string description = 6;
   string default = 7;
-  // field 8 is reserved for 'readOnly', which has an OpenAPI v2-specific meaning and is defined there.
-  reserved 8;
+  bool read_only = 8;
   // field 9 is reserved for 'examples', which is omitted from OpenAPI v2 in favor of 'example' field.
   reserved 9;
   double multiple_of = 10;
