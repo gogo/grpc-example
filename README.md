@@ -35,13 +35,18 @@ After starting the server, you can access the OpenAPI UI on
 To regenerate the proto files, ensure you have installed the generate dependencies:
 
 ```bash
-$ make install
-go install \
-        ./vendor/github.com/gogo/protobuf/protoc-gen-gogo \
-        ./vendor/github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway \
-        ./vendor/github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger \
-        ./vendor/github.com/mwitkow/go-proto-validators/protoc-gen-govalidators \
-        ./vendor/github.com/rakyll/statik
+$ GO111MODULE=on make install
+go get \
+        github.com/gogo/protobuf/protoc-gen-gogo \
+        github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway \
+        github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger \
+        github.com/mwitkow/go-proto-validators/protoc-gen-govalidators \
+        github.com/rakyll/statik
+go: finding github.com/mwitkow/go-proto-validators/protoc-gen-govalidators latest
+go: finding github.com/mwitkow/go-proto-validators latest
+go: finding github.com/gogo/protobuf/protoc-gen-gogo latest
+go: finding github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger latest
+go: finding github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway latest
 ```
 
 It also requires you to have the Google Protobuf compiler `protoc` installed.
@@ -79,12 +84,14 @@ protoc \
         -I vendor/ \
         --gogo_out=plugins=grpc,\
 Mgoogle/protobuf/timestamp.proto=github.com/gogo/protobuf/types,\
+Mgoogle/protobuf/duration.proto=github.com/gogo/protobuf/types,\
 Mgoogle/protobuf/empty.proto=github.com/gogo/protobuf/types,\
 Mgoogle/api/annotations.proto=github.com/gogo/googleapis/google/api,\
 Mgoogle/protobuf/field_mask.proto=github.com/gogo/protobuf/types:\
 $GOPATH/src/ \
-        --grpc-gateway_out=\
+        --grpc-gateway_out=allow_patch_feature=false,\
 Mgoogle/protobuf/timestamp.proto=github.com/gogo/protobuf/types,\
+Mgoogle/protobuf/duration.proto=github.com/gogo/protobuf/types,\
 Mgoogle/protobuf/empty.proto=github.com/gogo/protobuf/types,\
 Mgoogle/api/annotations.proto=github.com/gogo/googleapis/google/api,\
 Mgoogle/protobuf/field_mask.proto=github.com/gogo/protobuf/types:\
@@ -92,6 +99,7 @@ $GOPATH/src/ \
         --swagger_out=third_party/OpenAPI/ \
         --govalidators_out=gogoimport=true,\
 Mgoogle/protobuf/timestamp.proto=github.com/gogo/protobuf/types,\
+Mgoogle/protobuf/duration.proto=github.com/gogo/protobuf/types,\
 Mgoogle/protobuf/empty.proto=github.com/gogo/protobuf/types,\
 Mgoogle/api/annotations.proto=github.com/gogo/googleapis/google/api,\
 Mgoogle/protobuf/field_mask.proto=github.com/gogo/protobuf/types:\
