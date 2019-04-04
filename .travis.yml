@@ -21,4 +21,3 @@ before_install:
 script:
   - go test -v ./...
   - make generate
-  - git diff --exit-code
