@@ -1,13 +1,12 @@
 language: go
 
 go:
-  - "1.10.x"
   - "1.11.x"
   - "1.12.x"
   - "tip"
 
 env:
-  - PROTOBUF_VERSION=3.7.1
+  - PROTOBUF_VERSION=3.7.1 GO111MODULE=on
 
 before_install:
   - basename=protoc-${PROTOBUF_VERSION}-linux-x86_64
