@@ -63,7 +63,7 @@ func (b *Backend) AddUser(ctx context.Context, user *pbExample.User) (*types.Emp
 
 	b.users = append(b.users, user)
 
-	return nil, nil
+	return new(types.Empty), nil
 }
 
 func (b *Backend) ListUsers(req *pbExample.ListUsersRequest, srv pbExample.UserService_ListUsersServer) error {
