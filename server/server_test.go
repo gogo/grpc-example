@@ -33,13 +33,19 @@ func TestAddUserListUsers(t *testing.T) {
 		Role:       pbExample.Role_GUEST,
 		CreateDate: &cd2,
 	}
-	_, err := b.AddUser(context.Background(), u1)
+	v, err := b.AddUser(context.Background(), u1)
 	if err != nil {
 		t.Fatal("Failed to add user: ", err)
 	}
-	_, err = b.AddUser(context.Background(), u2)
+	if v == nil {
+		t.Fatal("Expected AddUser response not to be nil")
+	}
+	v, err = b.AddUser(context.Background(), u2)
 	if err != nil {
 		t.Fatal("Failed to add user: ", err)
+	}
+	if v == nil {
+		t.Fatal("Expected AddUser response not to be nil")
 	}
 
 	ctrl := gomock.NewController(t)
@@ -64,9 +70,12 @@ func TestAddUserDuplicateFails(t *testing.T) {
 		Role:       pbExample.Role_ADMIN,
 		CreateDate: &cd,
 	}
-	_, err := b.AddUser(context.Background(), u1)
+	v, err := b.AddUser(context.Background(), u1)
 	if err != nil {
 		t.Fatal("Failed to add user: ", err)
+	}
+	if v == nil {
+		t.Fatal("Expected AddUser response not to be nil")
 	}
 	_, err = b.AddUser(context.Background(), u1)
 	if err == nil {
@@ -80,9 +89,12 @@ func TestAddUserSetsCreateDate(t *testing.T) {
 		ID:   1,
 		Role: pbExample.Role_ADMIN,
 	}
-	_, err := b.AddUser(context.Background(), u)
+	v, err := b.AddUser(context.Background(), u)
 	if err != nil {
 		t.Fatal("Failed to add user: ", err)
+	}
+	if v == nil {
+		t.Fatal("Expected AddUser response not to be nil")
 	}
 
 	ctrl := gomock.NewController(t)
@@ -124,13 +136,19 @@ func TestListUsersByRole(t *testing.T) {
 		Role:       pbExample.Role_GUEST,
 		CreateDate: &cd,
 	}
-	_, err := b.AddUser(context.Background(), admin)
+	v, err := b.AddUser(context.Background(), admin)
 	if err != nil {
 		t.Fatal("Failed to add guest user: ", err)
 	}
-	_, err = b.AddUser(context.Background(), guest)
+	if v == nil {
+		t.Fatal("Expected AddUser response not to be nil")
+	}
+	v, err = b.AddUser(context.Background(), guest)
 	if err != nil {
 		t.Fatal("Failed to add admin user: ", err)
+	}
+	if v == nil {
+		t.Fatal("Expected AddUser response not to be nil")
 	}
 
 	ctrl := gomock.NewController(t)
@@ -229,9 +247,12 @@ func TestUpdateUser(t *testing.T) {
 		ID:   1,
 		Role: pbExample.Role_ADMIN,
 	}
-	_, err := b.AddUser(context.Background(), u)
+	v, err := b.AddUser(context.Background(), u)
 	if err != nil {
 		t.Fatal("Failed to add user: ", err)
+	}
+	if v == nil {
+		t.Fatal("Expected AddUser response not to be nil")
 	}
 
 	req := &pbExample.UpdateUserRequest{
