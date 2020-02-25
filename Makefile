@@ -15,8 +15,7 @@ generate:
 	# which cause the generated file to import the specified packages
 	# instead of the go_package's declared by the imported protof files.
 	#
-	# $$GOPATH/src is the output directory. It is relative to the GOPATH/src directory
-	# since we've specified a go_package option relative to that directory.
+	# ./proto is the output directory.
 	#
 	# proto/example.proto is the location of the protofile we use.
 	protoc \
@@ -24,28 +23,28 @@ generate:
 		-I vendor/github.com/grpc-ecosystem/grpc-gateway/ \
 		-I vendor/github.com/gogo/googleapis/ \
 		-I vendor/ \
-		--gogo_out=plugins=grpc,\
+		--gogo_out=plugins=grpc,paths=source_relative,\
 Mgoogle/protobuf/timestamp.proto=github.com/gogo/protobuf/types,\
 Mgoogle/protobuf/duration.proto=github.com/gogo/protobuf/types,\
 Mgoogle/protobuf/empty.proto=github.com/gogo/protobuf/types,\
 Mgoogle/api/annotations.proto=github.com/gogo/googleapis/google/api,\
 Mgoogle/protobuf/field_mask.proto=github.com/gogo/protobuf/types:\
-$$GOPATH/src/ \
-		--grpc-gateway_out=allow_patch_feature=false,\
+./proto/ \
+		--grpc-gateway_out=allow_patch_feature=false,paths=source_relative,\
 Mgoogle/protobuf/timestamp.proto=github.com/gogo/protobuf/types,\
 Mgoogle/protobuf/duration.proto=github.com/gogo/protobuf/types,\
 Mgoogle/protobuf/empty.proto=github.com/gogo/protobuf/types,\
 Mgoogle/api/annotations.proto=github.com/gogo/googleapis/google/api,\
 Mgoogle/protobuf/field_mask.proto=github.com/gogo/protobuf/types:\
-$$GOPATH/src/ \
+./proto/ \
 		--swagger_out=third_party/OpenAPI/ \
-		--govalidators_out=gogoimport=true,\
+		--govalidators_out=gogoimport=true,paths=source_relative,\
 Mgoogle/protobuf/timestamp.proto=github.com/gogo/protobuf/types,\
 Mgoogle/protobuf/duration.proto=github.com/gogo/protobuf/types,\
 Mgoogle/protobuf/empty.proto=github.com/gogo/protobuf/types,\
 Mgoogle/api/annotations.proto=github.com/gogo/googleapis/google/api,\
 Mgoogle/protobuf/field_mask.proto=github.com/gogo/protobuf/types:\
-$$GOPATH/src \
+./proto \
 		proto/example.proto
 
 	# Workaround for https://github.com/grpc-ecosystem/grpc-gateway/issues/229.
