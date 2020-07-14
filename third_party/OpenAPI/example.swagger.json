@@ -17,7 +17,7 @@
   "paths": {
     "/api/v1/users": {
       "get": {
-        "operationId": "ListUsers",
+        "operationId": "UserService_ListUsers",
         "responses": {
           "200": {
             "description": "A successful response.(streaming responses)",
@@ -63,7 +63,7 @@
         ]
       },
       "post": {
-        "operationId": "AddUser",
+        "operationId": "UserService_AddUser",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -95,7 +95,7 @@
     },
     "/api/v1/users/role": {
       "get": {
-        "operationId": "ListUsersByRole",
+        "operationId": "UserService_ListUsersByRole",
         "responses": {
           "200": {
             "description": "A successful response.(streaming responses)",
@@ -140,7 +140,7 @@
     },
     "/api/v1/users/{user.id}": {
       "patch": {
-        "operationId": "UpdateUser",
+        "operationId": "UserService_UpdateUser",
         "responses": {
           "200": {
             "description": "A successful response.",
