@@ -75,7 +75,7 @@ message User {
         (gogoproto.customname) = "ID",
         (validator.field) = {
             int_gt: 0
-            human_error: "ID must a positive integer"
+            human_error: "ID must be a positive integer"
         }
     ];
     Role role = 2;
